@@ -2,6 +2,7 @@ const apiOrigin = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000
 const apiBase = apiOrigin.replace(/\/$/, "");
 const authBase = "/api/admin/v1/auth";
 const platformTenantBase = "/api/platform/v1/tenants";
+const platformAccessBase = "/api/platform/v1/access";
 
 export class ApiError extends Error {
   constructor({ code, message, status, details = [] }) {
@@ -95,6 +96,44 @@ export function listTenantUsersRequest(filters, accessToken, tenantId) {
 
 export function dashboardOverviewRequest(accessToken, tenantId) {
   return request("/api/admin/v1/dashboard", { accessToken, tenantId });
+}
+
+export function listProductRatingsRequest(filters, accessToken, tenantId) {
+  const query = new URLSearchParams({ search: filters.search || "", status: filters.status || "ALL",
+    rating: String(filters.rating || 0), productId: filters.productId || "",
+    page: String(filters.page || 1), pageSize: String(filters.pageSize || 10) });
+  return request(`/api/admin/v1/ratings?${query}`, { accessToken, tenantId });
+}
+
+export function productRatingOptionsRequest(accessToken, tenantId) {
+  return request("/api/admin/v1/ratings/options", { accessToken, tenantId });
+}
+
+export function productRatingDetailsRequest(ratingId, accessToken, tenantId) {
+  return request(`/api/admin/v1/ratings/${ratingId}`, { accessToken, tenantId });
+}
+
+export function moderateProductRatingRequest(ratingId, input, accessToken, tenantId) {
+  return request(`/api/admin/v1/ratings/${ratingId}/moderate`, {
+    method: "POST", body: input, accessToken, tenantId
+  });
+}
+
+function reportQuery(filters) {
+  const query = new URLSearchParams({ reportType: filters.reportType || "SALES",
+    fromDate: filters.fromDate || "", toDate: filters.toDate || "",
+    warehouseId: filters.warehouseId || "", merchantId: filters.merchantId || "" });
+  if (filters.page) query.set("page", String(filters.page));
+  if (filters.pageSize) query.set("pageSize", String(filters.pageSize));
+  return query;
+}
+
+export function reportsWorkspaceRequest(filters, accessToken, tenantId) {
+  return request(`/api/admin/v1/reports?${reportQuery(filters)}`, { accessToken, tenantId });
+}
+
+export function exportReportRequest(filters, accessToken, tenantId) {
+  return requestFile(`/api/admin/v1/reports/export?${reportQuery(filters)}`, { accessToken, tenantId });
 }
 
 export function inviteTenantUserRequest(input, accessToken, tenantId) {
@@ -677,6 +716,33 @@ export function updateVendorRequest(vendorId, input, accessToken, tenantId) {
   return request(`/api/admin/v1/vendors/${vendorId}`, { method: "PATCH", body: input, accessToken, tenantId });
 }
 
+export function uploadVendorLogoRequest(vendorId, file, accessToken, tenantId) {
+  const query = new URLSearchParams({ fileName: file.name });
+  return uploadFile(`/api/admin/v1/vendors/${vendorId}/logo?${query}`, file, {
+    method: "PUT", accessToken, tenantId
+  });
+}
+
+export function uploadVendorDocumentRequest(vendorId, input, file, accessToken, tenantId) {
+  const query = new URLSearchParams({ fileName: file.name, documentType: input.documentType,
+    documentNumber: input.documentNumber || "", expiresAt: input.expiresAt || "" });
+  return uploadFile(`/api/admin/v1/vendors/${vendorId}/documents/upload?${query}`, file, {
+    method: "POST", accessToken, tenantId
+  });
+}
+
+export function downloadVendorDocumentRequest(vendorId, documentId, accessToken, tenantId) {
+  return requestFile(`/api/admin/v1/vendors/${vendorId}/documents/${documentId}/file`, {
+    accessToken, tenantId
+  });
+}
+
+export function decideVendorDocumentRequest(vendorId, documentId, input, accessToken, tenantId) {
+  return request(`/api/admin/v1/vendors/${vendorId}/documents/${documentId}/decision`, {
+    method: "POST", body: input, accessToken, tenantId
+  });
+}
+
 export function transitionVendorRequest(vendorId, action, notes, accessToken, tenantId) {
   return request(`/api/admin/v1/vendors/${vendorId}/${action}`, {
     method: "POST", body: { notes }, accessToken, tenantId
@@ -928,4 +994,43 @@ export function transitionPlatformTenantRequest(tenantId, action, reason, access
     body: { reason },
     accessToken
   });
+}
+
+export function listPlatformUsersRequest({ search = "", status = "ALL", page = 1, pageSize = 10 }, accessToken) {
+  const query = new URLSearchParams({ search, status, page: String(page), pageSize: String(pageSize) });
+  return request(`${platformAccessBase}/users?${query}`, { accessToken });
+}
+
+export function invitePlatformUserRequest(input, accessToken) {
+  return request(`${platformAccessBase}/users/invitations`, { method: "POST", body: input, accessToken });
+}
+
+export function changePlatformUserStatusRequest(userId, action, accessToken) {
+  return request(`${platformAccessBase}/users/${userId}/${action}`, { method: "POST", accessToken });
+}
+
+export function setPlatformUserRolesRequest(userId, roleIds, accessToken) {
+  return request(`${platformAccessBase}/users/${userId}/role-assignments`, {
+    method: "PUT", body: { roleIds }, accessToken
+  });
+}
+
+export function listPlatformRolesRequest(accessToken) {
+  return request(`${platformAccessBase}/roles`, { accessToken });
+}
+
+export function listPlatformPermissionsRequest(accessToken) {
+  return request(`${platformAccessBase}/permissions`, { accessToken });
+}
+
+export function createPlatformRoleRequest(input, accessToken) {
+  return request(`${platformAccessBase}/roles`, { method: "POST", body: input, accessToken });
+}
+
+export function updatePlatformRoleRequest(roleId, input, accessToken) {
+  return request(`${platformAccessBase}/roles/${roleId}`, { method: "PATCH", body: input, accessToken });
+}
+
+export function deletePlatformRoleRequest(roleId, accessToken) {
+  return request(`${platformAccessBase}/roles/${roleId}`, { method: "DELETE", accessToken });
 }

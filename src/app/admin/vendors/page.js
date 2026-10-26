@@ -12,6 +12,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  ImageUp,
   KeyRound,
   MapPin,
   PackageCheck,
@@ -32,6 +33,7 @@ import { useAuth } from "@/components/auth-provider";
 import { Status } from "@/components/dashboard-primitives";
 import { GlobalLoader } from "@/components/global-loader";
 import { TablePagination } from "@/components/table-pagination";
+import { VendorDocumentsPanel } from "@/components/vendor-documents-panel";
 import { canUser, tenantIdForUser } from "@/lib/auth-routing";
 import {
   createVendorOfferRequest,
@@ -41,6 +43,7 @@ import {
   transitionVendorRequest,
   updateVendorOfferRequest,
   updateVendorRequest,
+  uploadVendorLogoRequest,
   vendorDetailsRequest,
   vendorOptionsRequest,
 } from "@/lib/api-client";
@@ -884,6 +887,7 @@ function VendorDetailDialog({
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [error, setError] = useState("");
   const [editingProfile, setEditingProfile] = useState(false);
   const [creatingAccess, setCreatingAccess] = useState(false);
@@ -994,6 +998,30 @@ function VendorDetailDialog({
       setSaving(false);
     }
   }
+  async function uploadLogo(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setError("Choose a PNG or JPEG vendor logo.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Vendor logos must be 2 MB or smaller.");
+      return;
+    }
+    setUploadingLogo(true);
+    setError("");
+    try {
+      const result = await uploadVendorLogoRequest(vendorId, file, accessToken, tenantId);
+      setDetails(result);
+      onSaved();
+    } catch (requestError) {
+      setError(requestError.message || "Vendor logo could not be uploaded.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
   async function addOffer(event) {
     event.preventDefault();
     setSaving(true);
@@ -1076,8 +1104,10 @@ function VendorDetailDialog({
               {vendor ? (
                 <>
                   <section className="vendor-profile-hero">
-                    <div className="vendor-avatar" aria-hidden="true">
-                      {vendor.displayName.slice(0, 2).toUpperCase()}
+                    <div className={`vendor-avatar${vendor.logoUrl ? " has-image" : ""}`} aria-hidden="true">
+                      {vendor.logoUrl ? (
+                        <img alt="" src={vendor.logoUrl} />
+                      ) : vendor.displayName.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
                       <span>
@@ -1094,6 +1124,14 @@ function VendorDetailDialog({
                       </p>
                     </div>
                     <div className="vendor-profile-actions">
+                      {canManage ? (
+                        <label className={`button button-secondary vendor-logo-upload${uploadingLogo ? " is-disabled" : ""}`}>
+                          <ImageUp size={16} aria-hidden="true" />
+                          {uploadingLogo ? "Uploading..." : vendor.logoUrl ? "Replace logo" : "Upload logo"}
+                          <input accept="image/png,image/jpeg" disabled={uploadingLogo || saving}
+                            onChange={uploadLogo} type="file" />
+                        </label>
+                      ) : null}
                       {canManage && vendor.status === "PENDING" ? (
                         <button
                           className="button button-success"
@@ -1354,6 +1392,9 @@ function VendorDetailDialog({
                       </div>
                     </section>
                   )}
+                  <VendorDocumentsPanel accessToken={accessToken} canManage={canManage}
+                    documents={details.documents || []} onChange={(result) => { setDetails(result); onSaved(); }}
+                    tenantId={tenantId} vendorId={vendorId} />
                   <section className="vendor-catalog-section">
                     <header>
                       <div>
