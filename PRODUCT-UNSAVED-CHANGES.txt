@@ -1,0 +1,35 @@
+PRODUCT FORM UNSAVED-CHANGE PROTECTION
+Scope: admin product creation, product editing, variant pricing.
+
+Implemented
+- Cancel, close icon, backdrop dismissal and Escape ask for confirmation when dirty.
+- Untouched forms close directly. Successful saves keep their existing flow.
+- Keep editing receives initial focus; Escape keeps editing.
+- Confirmation is a native top-layer dialog, above the sidebar and existing modal.
+- Light/dark theme tokens, small-screen layout and reduced-motion support.
+- Browser reload/tab-close warning while dirty or saving, where supported.
+- Edit/pricing no longer reload the same product solely on token refresh.
+- Edit/pricing inputs are inert while saving; duplicate submissions are guarded.
+- Partial uploads retain saved product details and already uploaded images.
+- Closing partially saved edits refreshes the catalog list.
+
+Boundaries
+No autosave, local storage, backend change, migration or dependency added.
+No general SPA route/back/workspace-switch blocker is implemented.
+Browser unload prompts depend on browser support and prior user interaction.
+Discard never deletes persisted products or uploaded media.
+Network failures with an unknown server outcome require reloading before retrying
+a create operation; this feature does not introduce request idempotency.
+
+Verification
+Source/diff review only. Lint, tests, build and browser verification were not run.
+Manual verification still required:
+1. Open each form untouched and close: no confirmation.
+2. Change a field or choose images; try Cancel, X, backdrop and Escape.
+3. Keep editing retains data; discard closes without writing.
+4. Tab stays inside confirmation; Escape returns focus to the form.
+5. Save normally; simulate an upload failure after details are saved.
+6. Ensure saved data remains and only remaining uploads are warned about.
+7. Refresh the access token while editing; entered values must remain.
+8. Check reload warning, small screens, both themes and reduced motion.
+

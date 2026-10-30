@@ -1,0 +1,29 @@
+.dialog { width: min(820px, calc(100dvw - 32px)); }
+.dialog > header { flex-shrink: 0; }
+.dialog > form > footer { gap: 12px; flex-wrap: wrap; }
+.dialog > form > footer > div { flex-wrap: wrap; }
+.dialog > form > footer button { min-height: 44px; white-space: normal; }
+.steps { display: flex; gap: 24px; list-style: none; margin: 0; padding: 16px 24px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.steps li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .875rem; }
+.steps span { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--line-strong); }
+.steps [aria-current] { color: var(--ink); font-weight: 700; }
+.steps [aria-current] span { background: var(--positive-soft); color: var(--positive); border-color: var(--positive); }
+.heading { margin: 0 0 8px; font-size: 1.15rem; line-height: 1.5; }
+.heading:focus-visible { outline: 2px solid var(--action); outline-offset: 4px; }
+.help { color: var(--muted); line-height: 1.65; margin: 0 0 24px; }
+.review { animation: arrive 180ms var(--ease-emphasized) both; }
+.review dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; }
+.review dl > div { min-width: 0; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.review dt { color: var(--muted); font-size: .875rem; margin-bottom: 6px; }
+.review dd { margin: 0; color: var(--ink); font-weight: 650; overflow-wrap: anywhere; line-height: 1.6; }
+.review small { display: block; color: var(--muted); font-size: .875rem; font-weight: 400; }
+.review details { margin-top: 24px; }
+.review summary { cursor: pointer; min-height: 44px; padding: 10px 0; font-weight: 650; }
+.serials { display: flex; flex-wrap: wrap; list-style: none; gap: 8px; margin: 8px 0; padding: 0; }
+.serials li { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; overflow-wrap: anywhere; max-width: 100%; font-size: .875rem; }
+.notes { margin-top: 20px; overflow-wrap: anywhere; }
+.notes p { white-space: pre-wrap; line-height: 1.65; }
+.notice { border-left: 3px solid var(--warning); background: var(--warning-soft); padding: 16px; margin: 20px 0 0; line-height: 1.65; color: var(--ink); border-radius: 6px; }
+@keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) { .review dl { grid-template-columns: minmax(0, 1fr); } .steps { padding: 14px 16px; gap: 16px; flex-wrap: wrap; } .dialog { width: calc(100dvw - 16px); } .dialog input, .dialog select, .dialog textarea { font-size: 16px; min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .review { animation: none; } }

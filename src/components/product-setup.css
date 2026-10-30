@@ -1,0 +1,65 @@
+/* Guided setup reuses slate/emerald and light theme tokens; no new palette. */
+.product-setup [hidden] { display: none !important; }
+.dialog-backdrop.product-setup-backdrop { width: auto; }
+.product-setup.catalog-dialog { padding: 0; width: min(1100px, 100%); max-height: calc(100dvh - 40px); overflow: hidden; }
+.product-setup .vertical-picker.vertical-picker-single { grid-template-columns: minmax(0, 1fr); }
+.product-setup .catalog-dialog-head { padding: 22px 28px; margin: 0; border-bottom: 1px solid var(--line); }
+.product-setup .setup-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 16px 24px; margin: 0; list-style: none; border-bottom: 1px solid var(--line); }
+.setup-steps li { min-width: 0; }
+.setup-steps button { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 7px 8px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--muted); text-align: left; font: inherit; font-size: 12px; }
+.setup-steps button > span { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border: 1px solid var(--line-strong); border-radius: 50%; font-weight: 700; }
+.setup-steps button[aria-current] { background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; border-color: var(--accent); }
+.setup-steps button[aria-current] > span { background: var(--action); color: var(--action-ink); border-color: var(--action); }
+.product-setup .catalog-form-scroll { padding: 24px 28px; flex: 1; }
+.setup-step-title { outline: none; font-size: 21px; line-height: 1.35; margin: 0 0 8px; letter-spacing: -.03em; }
+.setup-step-help { margin: 0 0 24px; color: var(--muted); font-size: 13px; line-height: 1.65; max-width: 75ch; }
+.setup-stage { animation: setup-enter 170ms ease-out; }
+.setup-advanced { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 12px; }
+.setup-advanced > summary { cursor: pointer; padding: 12px 0; color: var(--accent-strong); font-weight: 650; font-size: 13px; min-height: 44px; }
+.setup-advanced[open] > summary { margin-bottom: 12px; }
+.setup-field-error { display: block; color: var(--danger); font-size: 12px; line-height: 1.5; white-space: normal; }
+.product-setup [aria-invalid=true] { border-color: var(--danger); }
+.setup-errors { padding: 16px 20px; margin-bottom: 20px; background: var(--danger-soft); border: 1px solid var(--danger); border-radius: 10px; color: var(--danger); outline-offset: 3px; }
+.setup-errors h3 { margin: 0 0 8px; font-size: 14px; }
+.setup-errors ul { margin: 0; padding-left: 18px; }
+.setup-errors button { min-height: 32px; padding: 5px 0; border: 0; color: inherit; background: transparent; text-align: left; text-decoration: underline; font: inherit; font-size: 12px; line-height: 1.5; }
+.setup-errors p { margin: 0; line-height: 1.6; }
+.setup-note { padding: 18px; display: flex; gap: 12px; margin: 18px 0; background: var(--accent-soft); color: var(--accent-strong); border-radius: 10px; font-size: 13px; line-height: 1.65; }
+.setup-note > svg { flex-shrink: 0; margin-top: 3px; }
+.setup-note strong { display: block; margin-bottom: 4px; }
+.setup-next-list { padding-left: 22px; margin: 20px 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.setup-next-list li { padding: 5px 0; }
+.setup-next-list strong { color: var(--ink); }
+.setup-review { margin: 0 0 20px; }
+.setup-review > div { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; border-bottom: 1px solid var(--line); padding: 14px 0; font-size: 13px; }
+.setup-review dt { color: var(--muted); }
+.setup-review dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; max-width: 100%; }
+.setup-review-prices { max-height: 240px; overflow: auto; border-block: 1px solid var(--line); padding: 4px 0; margin-bottom: 20px; list-style: none; }
+.setup-review-prices li { display: flex; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.setup-review-prices small { display: block; color: var(--muted); margin-top: 4px; overflow-wrap: anywhere; }
+.product-setup .catalog-dialog-actions { padding: 16px 28px; margin: 0; flex-shrink: 0; border-top: 1px solid var(--line); }
+.product-setup .catalog-dialog-actions > span { font-size: 12px; line-height: 1.5; color: var(--muted); }
+.product-setup .catalog-dialog-actions > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-setup .catalog-fieldset { min-width: 0; }
+.product-setup .variant-matrix td input { min-height: 44px; }
+.setup-saved { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 20px; margin: 20px 0; color: var(--ink); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; }
+.setup-saved > div:first-child { flex: 1; min-width: min(280px, 100%); }
+.setup-saved h2 { font-size: 18px; margin: 0 0 6px; }
+.setup-saved p { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0; }
+.setup-saved a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; text-decoration: underline; color: var(--accent-strong); margin-right: 16px; }
+@keyframes setup-enter { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (max-width: 700px) {
+  .product-setup.catalog-dialog { width: 100%; max-height: calc(100dvh - 24px); }
+  .product-setup .catalog-dialog-head { padding: 16px; }
+  .product-setup .catalog-dialog-head h2 { font-size: 20px; }
+  .product-setup .setup-steps { padding: 8px; gap: 2px; }
+  .setup-steps button { flex-direction: column; align-items: center; gap: 5px; padding: 6px 2px; font-size: 10px; text-align: center; min-height: 64px; line-height: 1.3; }
+  .setup-steps button > span { width: 23px; height: 23px; }
+  .product-setup .catalog-form-scroll { padding: 20px 16px; }
+  .product-setup .catalog-dialog-actions { padding: 12px 16px max(12px, env(safe-area-inset-bottom)); gap: 12px; }
+  .product-setup .catalog-dialog-actions > div { width: 100%; }
+  .product-setup .catalog-dialog-actions .button { flex: 1; justify-content: center; min-height: 44px; }
+  .product-setup .vertical-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-height: 540px) { .product-setup .catalog-dialog-head { padding-block: 10px; } .product-setup .setup-steps { padding-block: 4px; } .product-setup .catalog-dialog-actions { padding-block: 8px; } }
+@media (prefers-reduced-motion: reduce) { .setup-stage { animation: none; } }

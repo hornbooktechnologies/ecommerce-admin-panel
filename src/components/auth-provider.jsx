@@ -2,7 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { loginRequest, logoutRequest, refreshRequest } from "@/lib/api-client";
+import {
+  loginRequest, logoutRequest, refreshRequest, setApiAccessToken, setApiSessionHandlers
+} from "@/lib/api-client";
 import { canAccessArea, homeForUser, tenantIdForUser } from "@/lib/auth-routing";
 import { GlobalLoader } from "@/components/global-loader";
 
@@ -23,10 +25,12 @@ export function AuthProvider({ children }) {
     if (!refreshInFlight.current) {
       refreshInFlight.current = refreshRequest()
         .then((data) => {
+          setApiAccessToken(data.accessToken);
           setSession(authenticatedSession(data));
           return data;
         })
         .catch((error) => {
+          setApiAccessToken(null);
           setSession({ status: "anonymous", user: null, accessToken: null, activeTenantId: null });
           throw error;
         })
@@ -37,12 +41,18 @@ export function AuthProvider({ children }) {
     return refreshInFlight.current;
   }, [authenticatedSession]);
 
+  useEffect(() => setApiSessionHandlers({
+    onRefresh: (data) => setSession(authenticatedSession(data)),
+    onExpired: () => setSession({ status: "anonymous", user: null, accessToken: null, activeTenantId: null })
+  }), [authenticatedSession]);
+
   useEffect(() => {
     refreshSession().catch(() => {});
   }, [refreshSession]);
 
   const login = useCallback(async (input) => {
     const data = await loginRequest(input);
+    setApiAccessToken(data.accessToken);
     setSession(authenticatedSession(data));
     return data.user;
   }, [authenticatedSession]);
@@ -51,6 +61,7 @@ export function AuthProvider({ children }) {
     try {
       await logoutRequest();
     } finally {
+      setApiAccessToken(null);
       setSession({ status: "anonymous", user: null, accessToken: null, activeTenantId: null });
     }
   }, []);

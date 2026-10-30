@@ -1,5 +1,6 @@
 import "@fontsource-variable/manrope";
 import "./globals.css";
+import "./inbox.css";
 import { AuthProvider } from "@/components/auth-provider";
 import { ModalMotionObserver } from "@/components/modal-motion-observer";
 

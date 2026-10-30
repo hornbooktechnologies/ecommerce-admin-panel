@@ -1,0 +1,17 @@
+.dialog { position: fixed; inset: 0; margin: auto; width: min(460px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px #0005; overflow-y: auto; overscroll-behavior: contain; }
+.dialog[open] { animation: appear 180ms var(--ease-emphasized) both; }
+.dialog::backdrop { background: #0008; backdrop-filter: blur(3px); animation: fade 180ms ease both; }
+.dialog[data-closing] { animation: disappear 150ms var(--ease-exit) both; pointer-events: none; }
+.dialog[data-closing]::backdrop { animation: fade 150ms ease reverse both; }
+.body { padding: 24px; }
+.icon { display: inline-grid; place-items: center; width: 48px; height: 48px; color: var(--warning); background: var(--warning-soft); border-radius: 12px; }
+.body h2 { margin: 18px 0 10px; font-size: 1.3rem; line-height: 1.35; }
+.body p { margin: 0; color: var(--muted); line-height: 1.65; font-size: .95rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 24px; border-top: 1px solid var(--line); }
+.actions button { flex: 1 1 160px; min-height: 44px; white-space: normal; }
+.actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@keyframes appear { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
+@keyframes disappear { to { opacity: 0; transform: translateY(5px); } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 480px) { .body { padding: 20px; } .actions { padding: 16px 20px; } }
+@media (prefers-reduced-motion: reduce) { .dialog[open], .dialog[data-closing], .dialog::backdrop { animation: none; } }

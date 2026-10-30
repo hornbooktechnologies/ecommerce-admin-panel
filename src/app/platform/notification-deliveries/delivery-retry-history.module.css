@@ -1,0 +1,28 @@
+.wrapper { margin-top: 18px; min-width: 0; }
+.toggle { gap: 10px; max-width: 100%; white-space: normal; text-align: left; }
+.toggle svg { flex: 0 0 auto; transition: transform var(--motion-fast) var(--ease-standard); }
+.expanded { transform: rotate(180deg); }
+.panel { margin-top: 16px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); min-width: 0; }
+.panel[hidden] { display: none; }
+.header, .entryHeading, .current { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.header h3 { margin: 0; font-size: 1rem; }
+.header p { margin: 6px 0 0; color: var(--muted); font-size: .85rem; }
+.header button { white-space: normal; }
+.help, .actor { color: var(--muted); font-size: .85rem; line-height: 1.6; }
+.current { justify-content: flex-start; margin: 20px 0; font-size: .85rem; }
+.timeline { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 16px; }
+.timeline > li { padding: 20px; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 10px; min-width: 0; }
+.entryHeading > span { color: var(--muted); font-size: .8rem; }
+.changes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.changes dt, .references dt { color: var(--muted); font-size: .78rem; margin-bottom: 6px; }
+.changes dd, .references dd { margin: 0; font-size: .85rem; overflow-wrap: anywhere; }
+.reason { border-top: 1px solid var(--line); padding-top: 16px; font-size: .85rem; }
+.reason p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; margin: 8px 0 0; }
+.references { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0 0; }
+.references code { font-size: .75rem; }
+.pagination { border: 0; margin: 0; padding: 0; min-width: 0; }
+.error { padding: 16px; background: var(--danger-soft); color: var(--danger); border-radius: 8px; line-height: 1.6; }
+.empty { padding: 20px 0; color: var(--muted); line-height: 1.6; }
+@media (max-width: 800px) { .changes, .references { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .panel, .timeline > li { padding: 16px; } .header { align-items: flex-start; flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .toggle svg { transition: none; } }

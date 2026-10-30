@@ -1,0 +1,95 @@
+COMMERCE OS - GUIDED PRODUCT SETUP
+Phase 5 | 29 October 2026
+
+WHERE TO FIND IT
+Admin > Catalog > Products > New product
+Implemented in D:\Global-ecommerce\ecommerce-admin-panel.
+
+THE FIVE STEPS
+1. Basics
+   Product type is restricted to the tenant's enabled types. Standard is the
+   default structure; choose Bundle only for a kit containing other products.
+   Enter code/name and choose category/brand from existing masters. Tax, origin,
+   manufacturer, description and custom specifications remain available under
+   "Tax, origin and additional details".
+
+2. Variants & price
+   Select colours and sizes, or keep the Standard variant. Every combination
+   retains its own SKU, barcode, MRP, selling price and optional cost.
+   Existing bulk-price entry, selling units, quantity increments, grocery weight
+   settings, electronics warranties, apparel fields and return policy remain.
+
+3. Images
+   Select actual image files with the existing uploader. The selected files stay
+   in memory while navigating between steps and upload when the draft is saved.
+   Colour galleries, ordering, alt text and replacement remain in Catalog > Media.
+
+4. Stock
+   This step explains the correct next operation; it does not receive stock.
+   Standard products need receipts for their exact variant, seller and warehouse.
+   Bundles need component assignments and sufficient sellable component stock.
+   Serial numbers and batches/expiry remain part of the inventory workflow.
+   This avoids treating a catalog write as an inventory transaction.
+
+5. Review
+   Review product identity, type, images and each variant's price. The action is
+   explicitly "Create draft". It does not approve, publish or add stock.
+   After save, the catalog shows next-step guidance and permitted links to Media,
+   Bundles or Inventory. The destination modules keep their existing selection
+   flows; these links do not preselect a warehouse or receive any stock.
+
+BEHAVIOUR AND SAFETY
+- Back and step navigation preserve values, selected files and variant prices.
+- Moving forward validates prior steps. Invalid fields have inline messages
+  and a focusable summary with links to their controls, including hidden advanced
+  fields. The API remains authoritative for business validation and permissions.
+- Duplicate SKUs, missing/invalid prices, selling price above MRP, invalid code,
+  tenant type, duplicate custom names and grocery weight bounds are checked.
+- Nothing is written before the final action. Repeated submit is guarded while
+  a save is in progress.
+- If the draft saves but an image fails, retry uploads only the remaining files
+  against the same product. Product fields are locked to avoid suggesting edits
+  are being saved. Closing the saved draft refreshes the list and explains any
+  remaining uploads; Media can be used later.
+- A completed response from an unmounted form cannot update the new workspace.
+  A server write already underway may still finish for its original tenant.
+- Closing an unsaved form discards its in-memory values; there is no autosave or
+  recovery after a browser reload in this phase.
+
+DESIGN
+The UI/UX pass uses progressive disclosure, linked inline validation, keyboard
+focus management and visible actions. Existing Manrope and semantic light/slate-
+emerald tokens are retained. The dialog is portalled outside the application
+shell, centred in the viewport, with internal scrolling and a reachable footer.
+Short step transitions respect reduced motion; no new dependencies were added.
+
+VERIFICATION
+- Admin lint, 25 unit tests and production build passed.
+- Isolated browser checks covered standard and bundle drafts, different size
+  prices, back navigation, review-before-write, API failure/retry, partial image
+  upload failure without duplicate creation, tenant type restrictions, required
+  grocery increments, custom-field validation and electronics warranty payloads.
+- Keyboard focus loop, Escape/focus restoration and footer reachability checked.
+- Visually reviewed 375, 768, 844 landscape and 1440 pixel layouts in light/dark.
+- Zero browser JavaScript/React console errors in the verification run.
+- Browser API writes were mocked: no real product, media or stock record was
+  created. This verifies client interaction and payloads, not a new production
+  catalog/database integration test. Existing backend routes were not changed.
+
+REPEAT THE CHECK
+Keep the existing admin dev server running at http://localhost:3000.
+From ecommerce-admin-panel, run:
+  npm test
+  npm run lint
+  npm run build
+  node scripts/verify-product-setup.mjs
+
+The browser check uses the already installed Playwright/Edge dependency in the
+sibling ecommerce-frontend repo and synthetic API responses. It does not start
+a second server. Screenshots are saved under coverage/product-setup (git-ignored).
+
+SCOPE REMAINING
+The dashboard priority-task redesign and additional notification producers are
+separate work. Direct stock receipt/component editing inside the creation wizard
+and automatic draft recovery are not implemented by this change. Existing edit,
+publication, inventory, media and bundle modules continue to handle those tasks.

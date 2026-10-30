@@ -8,6 +8,14 @@ The interface uses the locally bundled Manrope variable family across weights 20
 
 ## Content plan
 
+### Dark palette — slate and emerald
+
+Dark mode uses deep slate canvas (`#101820`), raised slate surfaces (`#17232e`), soft white text and emerald actions (`#34c99a`). Teal, muted lavender and copper distinguish module icons; amber is reserved for warning states, not brand chrome. Light mode is unchanged.
+
+The visual thesis is a calm commerce workspace with clear surface separation rather than metallic gold effects. Content hierarchy stays unchanged: navigation, workspace header, working tables and contextual dialogs. Motion retains existing short hover/modal transitions and reduced-motion support; the gold shimmer and repeating selected-menu sheen are removed.
+
+Use semantic tokens for primary/on-primary, surfaces, outlines and state colours, following [Material colour-role guidance](https://m3.material.io/styles/color/the-color-system). Verify text/action pairs at 4.5:1 or better. Do not reintroduce hardcoded gold gradients in individual components.
+
 1. Persistent role-aware navigation and active business context.
 2. A compact workspace header with orientation and primary action.
 3. A plain metric strip for operational state.

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BadgeIndianRupee, CheckCircle2, CircleX, Clock3, Eye, MapPin,
   PackageCheck, Search, ShoppingBag, Truck, UserRound, X } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { NotificationTarget } from "@/components/notification-target";
 import { useAuth } from "@/components/auth-provider";
 import { Status } from "@/components/dashboard-primitives";
 import { GlobalLoader } from "@/components/global-loader";
@@ -112,5 +113,6 @@ export default function VendorOrdersPage() {
     </section>{selected ? <VendorOrderDialog accessToken={accessToken} canFulfill={canFulfill}
       canManage={canManage} merchantId={merchantId} onClose={() => setSelected(null)}
       onUpdated={load} sellerOrderId={selected} tenantId={tenantId} /> : null}
+    <NotificationTarget tenantId={tenantId} merchantId={merchantId} onOpen={setSelected} />
   </AppShell>;
 }

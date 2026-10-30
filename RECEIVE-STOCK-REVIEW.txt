@@ -1,0 +1,48 @@
+RECEIVE STOCK - REVIEW BEFORE POSTING
+Implemented in ecommerce-admin-panel, Inventory > Receive stock.
+
+Flow
+1. Explicitly select warehouse and its seller's product variant.
+2. Enter received quantity, optional unit cost/document/notes and required
+   batch, expiry or serial information.
+3. Review warehouse, seller, SKU, quantity, cost and traceability details.
+4. Edit details without losing values, or Confirm & post receipt.
+No API write occurs at the Review receipt step.
+
+Safety and usability
+- Existing API, permissions and stock transaction rules remain authoritative.
+- Serialized products require whole quantities and matching unique serials.
+- Receipt serial limit (500), serial length (190), and date ordering checked.
+- Quantities retain six-decimal precision, unit cost supports four decimals.
+- Batch/serial values not applicable to the chosen variant are excluded.
+- Closing dirty forms asks before discarding; reload warning where supported.
+- Posting is guarded against duplicate clicks while a request is pending.
+- A failed/unknown response warns users to check history before retrying.
+  No server idempotency or automatic retry is introduced by this change.
+- Options are a stable snapshot for the dialog. Reopen for refreshed options.
+- Receipt dialogs are tenant-keyed and close on workspace changes.
+- Late option/list responses cannot replace a newer inventory request.
+- A receipt finishing after unmount cannot close a new workspace's form.
+  A server operation already underway may still complete for its original tenant.
+- Modal uses a body portal, internal scrolling and existing global body scroll lock.
+- UI/UX guidance informed review-before-write, keyboard focus, visible step labels,
+  explicit warnings, theme tokens and reduced-motion support.
+
+Scope
+Only Receive stock is redesigned. Count, policy, transfer, warehouse and
+purchase-order workflows are unchanged. No migrations or dependencies added.
+No autosave or general SPA navigation guard.
+
+Verification
+Source and diff inspection only. Lint, tests, build and browser verification
+were skipped as requested. No actual warehouse stock was modified.
+
+Manual checks still pending
+- Standard receipt: review sends no request; confirm sends the expected payload.
+- Grocery: decimal quantities, required lot/expiry, invalid date ordering.
+- Electronics: duplicate serials, mismatched count, >500 serials, full review.
+- Warehouse/variant switches: seller filtering and non-applicable field exclusion.
+- Back from review retains inputs. Cancel/X/Escape/backdrop guard unsaved values.
+- Posting double click, failed request, ambiguous network outcome guidance.
+- Tenant switch/token refresh during form editing or a pending receipt.
+- Mobile and short landscape viewport, light/dark mode, Tab, Escape and focus.

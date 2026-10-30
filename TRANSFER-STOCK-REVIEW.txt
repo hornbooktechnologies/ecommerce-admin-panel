@@ -1,0 +1,57 @@
+WAREHOUSE TRANSFERS - REVIEW AND SAFEGUARDS
+
+Location: Inventory > Transfer on an available stock balance.
+Implemented in D:\Global-ecommerce\ecommerce-admin-panel.
+
+Flow
+1. Select another active warehouse for the same seller.
+2. Enter quantity and, when required, source batch; or select exact serials.
+3. Supply transfer notes and review source, destination, product/SKU, quantity,
+   batch/serial identity, expected source balance and destination increase.
+4. Edit without losing inputs, or Confirm transfer.
+Review sends no stock-changing request.
+
+Rules retained
+Existing backend endpoint, SQL/transaction rules and permissions are unchanged.
+The transfer is immediate, not dispatch/in-transit/receipt management.
+Reserved and quarantined units cannot move; serialized transfers retain their
+individual identities and associated batch traceability.
+Non-serialized quantities support six decimals; serial selections are capped at
+the lesser of available stock, available serials and the API's 500-item limit.
+Serial picker displays 10 items per page and preserves cross-page selections.
+
+Safeguards added
+- Explicit destination/batch selection; no auto-selection of the first warehouse.
+- Review before posting; unchanged input survives token refresh.
+- Unsaved-close confirmation and browser reload warning where supported.
+- Double-click lock during preflight and posting.
+- Read-only refresh of stock and eligible warehouses before POST.
+- Changed stock/reservations/tracking, selected serial identity/availability or
+  destination details require a new review. User input is retained.
+- Unavailable selected serials remain visible for explicit removal.
+- A failed preflight sends no transfer. Ambiguous POST failures warn to check
+  both warehouses/history before retrying; no automatic retry or idempotency added.
+- Preflight is not an atomic expected-version check. Stock can change between
+  preflight and POST; the existing transaction enforces current availability.
+- Tenant-keyed dialogs and unmount checks prevent old requests from closing a new
+  workspace's form. Already-sent server writes may still complete for their tenant.
+- Body portal, internal scrolling, keyboard containment, focused errors/headings,
+  wrapped controls and theme/reduced-motion styles follow UI/UX guidance.
+
+Scope
+No dependencies, migration or backend changes. No actual stock was transferred.
+Receive stock, Count stock, policy and warehouse creation flows are retained.
+No autosave, arbitrary SPA-navigation blocker or in-transit tracking introduced.
+
+Verification
+Source/diff review only. Lint, tests, build and browser checks not run.
+Manual verification pending:
+- Quantity, decimal, batch and serial transfers; source/destination shown correctly.
+- Wrong seller/same warehouse/inactive destination excluded.
+- Quantity above source or batch availability, blank notes, zero serials.
+- Serial page navigation and selection retention, 500 limit and unavailable removal.
+- Review/edit and Cancel/X/Escape/backdrop unsaved guards.
+- Token refresh and tenant switch while editing/preflight/posting.
+- Stock or destination change before confirmation requires rereview, no POST.
+- Preflight error, successful transfer, ambiguous network outcome guidance.
+- Mobile/landscape, light/dark, long serial labels, keyboard and reduced motion.

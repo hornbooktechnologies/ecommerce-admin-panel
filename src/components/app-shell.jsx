@@ -20,6 +20,7 @@ import {
   FileClock,
   FileSpreadsheet,
   LayoutDashboard,
+  PanelsTopLeft,
   KeyRound,
   LockKeyhole,
   LogOut,
@@ -43,7 +44,9 @@ import {
 import { AuthGuard, useAuth } from "@/components/auth-provider";
 import { AccountPasswordDialog } from "@/components/account-password-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { navigationForUser } from "@/lib/auth-routing";
+import { NotificationInbox } from "@/components/notification-inbox";
+import { navigationForUser, merchantIdForUser } from "@/lib/auth-routing";
+import { groupNavigation } from "@/lib/inbox-navigation";
 
 const icons = {
   overview: LayoutDashboard,
@@ -58,6 +61,7 @@ const icons = {
   catalog: Tags,
   inventory: Boxes,
   stores: Store,
+  homepage: PanelsTopLeft,
   vendors: BriefcaseBusiness,
   returns: ArchiveRestore,
   warranties: BadgeCheck,
@@ -226,6 +230,8 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
   const activeContext = contexts.find((context) => context.id === activeTenantId) || contexts[0];
   const contextTenantId = activeContext?.id || null;
   const items = navigationForUser(user, area, contextTenantId);
+  const merchantId = area === "vendor" ? merchantIdForUser(user, contextTenantId) : null;
+  const groups = groupNavigation(items);
   const currentItem = [...items]
     .sort((left, right) => right.href.length - left.href.length)
     .find((item) => item.href === currentPath || (item.matchPrefix && currentPath.startsWith(`${item.matchPrefix}/`))
@@ -344,7 +350,10 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
 
         <div className="nav-section-label"><span>Workspace</span><i>{items.length}</i></div>
         <nav className="primary-nav" aria-label="Workspace pages">
-          {items.map((item) => {
+          {groups.map((group, index) => <details className="workspace-nav-group" key={`${group.id}:${sidebarCollapsed && !compactViewport}`}
+            open={(!compactViewport && sidebarCollapsed) || index === 0 || group.items.some(item => item.href === currentItem?.href)}>
+            <summary><span>{group.label}</span><ChevronDown size={14} aria-hidden="true" /></summary>
+            <div className="workspace-nav-group-items">{group.items.map((item) => {
             const Icon = icons[item.icon] || ClipboardList;
             const active = item.href === currentPath
               || (item.matchPrefix && currentPath.startsWith(`${item.matchPrefix}/`))
@@ -357,7 +366,7 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
                 <ChevronRight className="nav-link-arrow" size={14} aria-hidden="true" />
               </Link>
             );
-          })}
+          })}</div></details>)}
         </nav>
 
         <div className="sidebar-foot">
@@ -400,6 +409,8 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
             </span>
           </div>
           <div className="topbar-actions">
+            <NotificationInbox key={`${user.id}:${area}:${contextTenantId}:${merchantId}:${JSON.stringify(user.ui?.capabilities)}`}
+              area={area} tenantId={contextTenantId} merchantId={merchantId} items={items} />
             <ThemeToggle />
             <div className="user-summary">
               <span className="user-copy">

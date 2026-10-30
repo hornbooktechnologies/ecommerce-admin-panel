@@ -1,0 +1,83 @@
+COMMERCE OS — ADMIN NOTIFICATIONS AND NAVIGATION
+Phase 3 | 29 October 2026
+
+IMPLEMENTED
+The shared admin header now includes a live notification bell and unread badge.
+It uses the persistent inbox APIs added in Phase 2, not sample notifications.
+The shared shell also supports vendor and platform inbox API scopes; platform
+event producers are still pending, so a platform inbox may have no updates.
+
+Open the bell to see All / Unread filters, ten notifications per page, individual
+read/unread controls, mark-all-read, refresh, and a link to the exact order or
+return. Read state is saved by the API. Unsupported or ungranted destinations
+do not become links. Destination APIs check access again.
+
+The tenant sidebar now has five expandable groups supplied by the API:
+  Daily operations
+  Products & stock
+  Storefront & marketing
+  Business management
+  Settings
+Groups contain only the modules already granted to the signed-in user. Empty
+groups do not appear. The current group opens automatically. The collapsed icon
+rail keeps every granted destination accessible. Older API responses without
+group metadata continue to render under Workspace.
+
+TO USE
+1. Restart the backend if it is not running in watch mode, then refresh the
+   admin page to receive the new navigation metadata.
+2. Keep the inbox worker running in a separate backend terminal:
+     npm run notifications:inbox
+   This worker is not automatically installed as a background service.
+3. New supported events create notifications. Old activity is not backfilled.
+   If the inbox stays empty, check npm run notifications:inbox:status first.
+
+INITIAL EVENTS (UNCHANGED FROM PHASE 2)
+Admin: new order; return/exchange request awaiting review.
+Vendor: new seller order assigned to that vendor.
+Customer backend: existing order/shipment/return/exchange lifecycle hooks.
+Customer storefront UI is not connected yet.
+Stock/payment/warranty/import/approval/platform producers remain future work.
+
+INTERACTION AND DESIGN
+Visual thesis: calm, readable updates using the existing light and black/gold
+themes; no new decorative surfaces or competing action colours.
+Content: workspace context, filters/actions, divided update list, pagination.
+Motion: short modal entrance/exit and grouped-navigation disclosure; reduced
+motion disables animations. Native modal top layer prevents sidebar overlap.
+The page stays locked while the inbox scrolls. Keyboard focus wraps inside the
+panel, Escape closes it, and focus returns to the bell. Status is not colour-only.
+
+NETWORK / SECURITY
+The inbox polls every 30 seconds only in a visible tab and refreshes on window
+focus. Closed panels fetch only the unread count. Requests use existing token
+refresh handling. Requests are aborted on scope changes and unmount; responses
+from the previous tenant/account cannot populate the new component instance.
+No tokens or notification content are stored in browser localStorage.
+No new dependency, email integration, browser-push permission or hosting service.
+Mark-all-read uses the API's snapshot cutoff so later updates remain unread.
+Action feedback is inline; this phase does not introduce toast popups.
+
+VERIFICATION
+Admin lint and 18 unit tests passed. Production build passed.
+Backend navigation/inbox checks: 19 tests passed.
+An isolated headless Edge session used the existing admin dev server and actual
+Express inbox/record routes against rollback-only MariaDB fixtures. Initial
+authentication was supplied by a test fixture, not a real user's login session.
+Verified read persistence after reload, mark-all, filters, 10-row pagination,
+exact order/return links, keyboard wrapping/Escape, request failure/retry,
+empty states, and delayed-response isolation when changing tenant workspace.
+Visually reviewed 375px phone, 768px tablet, 844px landscape and 1440px desktop;
+normal/reduced motion and light/dark themes were checked. No page JS errors.
+The test fixture and its notifications were rolled back; no email was sent.
+Vendor/platform browser flows and multi-tab concurrent mutation were not covered
+by this browser pass; scoped API/unit coverage exists separately.
+
+Browser harness and screenshots for this local run:
+  D:\E-commerce\tmp\admin-inbox-ui\verify-browser.mjs
+  D:\E-commerce\tmp\admin-inbox-ui\screenshots
+
+NEXT
+Connect the customer storefront inbox, then add the guided product setup flow.
+The dashboard task-queue redesign and expanded event producers are not part of
+this change. Existing business workflows, permissions and unrelated edits remain.

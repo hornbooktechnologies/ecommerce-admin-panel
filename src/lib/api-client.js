@@ -4,6 +4,35 @@ const authBase = "/api/admin/v1/auth";
 const platformTenantBase = "/api/platform/v1/tenants";
 const platformAccessBase = "/api/platform/v1/access";
 
+export function homepageSectionsRequest(storeId, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-sections`, { accessToken, tenantId });
+}
+export function saveHomepageSectionsRequest(storeId, input, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-sections`, { method: "PUT", body: input, accessToken, tenantId });
+}
+export function publishHomepageSectionsRequest(storeId, revision, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-sections/publish`, { method: "POST", body: { revision }, accessToken, tenantId });
+}
+export function previewHomepageSectionsRequest(storeId, document, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-sections/preview`, { method: "POST", body: document, accessToken, tenantId });
+}
+
+export function homepageHeroRequest(storeId, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-hero`, { accessToken, tenantId });
+}
+export function saveHomepageHeroRequest(storeId, input, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-hero`, { method: "PUT", body: input, accessToken, tenantId });
+}
+export function publishHomepageHeroRequest(storeId, revision, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-hero/publish`, { method: "POST", body: { revision }, accessToken, tenantId });
+}
+export function homepageHeroProductsRequest(storeId, search, accessToken, tenantId, selectedSlug = "") {
+  return request(`/api/admin/v1/stores/${storeId}/homepage-hero/products?${new URLSearchParams({ search, selectedSlug })}`, { accessToken, tenantId });
+}
+export function uploadHomepageHeroImageRequest(storeId, file, accessToken, tenantId) {
+  return uploadFile(`/api/admin/v1/stores/${storeId}/homepage-hero/images?${new URLSearchParams({ fileName: file.name })}`, file, { accessToken, tenantId });
+}
+
 export class ApiError extends Error {
   constructor({ code, message, status, details = [] }) {
     super(message);
@@ -14,13 +43,117 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = "GET", body, accessToken, tenantId, merchantId } = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+let managedAccessToken = null;
+let refreshInFlight = null;
+let sessionHandlers = { onRefresh: null, onExpired: null };
+
+export function setApiAccessToken(accessToken) {
+  managedAccessToken = accessToken || null;
+}
+
+export function setApiSessionHandlers({ onRefresh, onExpired } = {}) {
+  const handlers = {
+    onRefresh: typeof onRefresh === "function" ? onRefresh : null,
+    onExpired: typeof onExpired === "function" ? onExpired : null
+  };
+  sessionHandlers = handlers;
+  return () => {
+    if (sessionHandlers === handlers) {
+      sessionHandlers = { onRefresh: null, onExpired: null };
+    }
+  };
+}
+
+function responseError(payload, response, fallbackMessage) {
+  return new ApiError({
+    code: payload?.error?.code || "REQUEST_FAILED",
+    message: payload?.error?.message || fallbackMessage,
+    status: response.status,
+    details: payload?.error?.details || []
+  });
+}
+
+async function refreshAccessToken() {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      const response = await fetch(`${apiBase}${authBase}/refresh`, {
+        method: "POST",
+        credentials: "include"
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw responseError(payload, response, "Your session could not be renewed.");
+      }
+      if (!payload?.data?.accessToken) {
+        throw new ApiError({
+          code: "INVALID_SESSION_RESPONSE",
+          message: "Your session could not be renewed.",
+          status: 500
+        });
+      }
+      managedAccessToken = payload.data.accessToken;
+      sessionHandlers.onRefresh?.(payload.data);
+      return managedAccessToken;
+    })()
+      .catch((error) => {
+        if (error?.status === 401) {
+          managedAccessToken = null;
+          sessionHandlers.onExpired?.();
+        }
+        throw error;
+      })
+      .finally(() => {
+        refreshInFlight = null;
+      });
+  }
+  return refreshInFlight;
+}
+
+function mayRefresh(path, accessToken) {
+  if (!accessToken) return false;
+  return ![
+    `${authBase}/login`, `${authBase}/refresh`, `${authBase}/logout`,
+    `${authBase}/password/forgot`, `${authBase}/password/reset`
+  ].includes(path);
+}
+
+async function fetchWithAuthentication(path, { method = "GET", headers = {}, body, accessToken, signal } = {}) {
+  const send = (token) => fetch(`${apiBase}${path}`, {
     method,
     credentials: "include",
+    signal,
+    headers: {
+      ...headers,
+      ...(token ? { authorization: `Bearer ${token}` } : {})
+    },
+    body
+  });
+
+  const sentToken = accessToken || null;
+  let response = await send(sentToken);
+  signal?.throwIfAborted();
+  if (response.status !== 401 || !mayRefresh(path, sentToken)) return response;
+
+  const retryToken = managedAccessToken && managedAccessToken !== sentToken
+    ? managedAccessToken
+    : await refreshAccessToken();
+  signal?.throwIfAborted();
+  response = await send(retryToken);
+  signal?.throwIfAborted();
+  if (response.status === 401) {
+    managedAccessToken = null;
+    sessionHandlers.onExpired?.();
+  }
+  return response;
+}
+
+async function request(path, { method = "GET", body, accessToken, tenantId, merchantId, signal } = {}) {
+  const response = await fetchWithAuthentication(path, {
+    method,
+    accessToken,
+    signal,
     headers: {
       ...(body ? { "content-type": "application/json" } : {}),
-      ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
       ...(tenantId ? { "x-tenant-id": tenantId } : {}),
       ...(merchantId ? { "x-merchant-id": merchantId } : {})
     },
@@ -40,9 +173,29 @@ async function request(path, { method = "GET", body, accessToken, tenantId, merc
   return payload?.data;
 }
 
+function inboxBase(area) {
+  if (!["admin", "vendor", "platform"].includes(area)) throw new Error("Unsupported notification area");
+  return `/api/${area}/v1/notifications`;
+}
+
+export function listInboxRequest(area, { filter = "ALL", page = 1, category = "ALL", search = "" } = {}, context) {
+  const query = new URLSearchParams({ filter, page: String(page), pageSize: "10" });
+  if (category !== "ALL") query.set("category", category);
+  if (search) query.set("search", search);
+  return request(`${inboxBase(area)}?${query}`, context);
+}
+export function inboxUnreadRequest(area, context) {
+  return request(`${inboxBase(area)}/unread-count`, context);
+}
+export function markInboxRequest(area, notificationId, read, context) {
+  return request(`${inboxBase(area)}/${encodeURIComponent(notificationId)}`, { ...context, method: "PATCH", body: { read } });
+}
+export function markAllInboxRequest(area, throughId, context) {
+  return request(`${inboxBase(area)}/read-all`, { ...context, method: "POST", body: { throughId } });
+}
+
 async function requestFile(path, { accessToken, tenantId } = {}) {
-  const response = await fetch(`${apiBase}${path}`, { credentials: "include", headers: {
-    ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
+  const response = await fetchWithAuthentication(path, { accessToken, headers: {
     ...(tenantId ? { "x-tenant-id": tenantId } : {})
   } });
   if (!response.ok) {
@@ -57,12 +210,11 @@ async function requestFile(path, { accessToken, tenantId } = {}) {
 }
 
 async function uploadFile(path, file, { method = "POST", accessToken, tenantId } = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+  const response = await fetchWithAuthentication(path, {
     method,
-    credentials: "include",
+    accessToken,
     headers: {
       "content-type": file.type,
-      ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
       ...(tenantId ? { "x-tenant-id": tenantId } : {})
     },
     body: file
@@ -476,6 +628,13 @@ export function listStoresRequest(filters, accessToken, tenantId) {
 
 export function storeDetailsRequest(storeId, accessToken, tenantId) {
   return request(`/api/admin/v1/stores/${storeId}`, { accessToken, tenantId });
+}
+
+export function paymentSettingsRequest(storeId, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/payments`, { accessToken, tenantId });
+}
+export function savePaymentSettingsRequest(storeId, body, accessToken, tenantId) {
+  return request(`/api/admin/v1/stores/${storeId}/payments`, { method: "PUT", body, accessToken, tenantId });
 }
 
 export function createStoreRequest(input, accessToken, tenantId) {
@@ -1033,4 +1192,22 @@ export function updatePlatformRoleRequest(roleId, input, accessToken) {
 
 export function deletePlatformRoleRequest(roleId, accessToken) {
   return request(`${platformAccessBase}/roles/${roleId}`, { method: "DELETE", accessToken });
+}
+
+export function listNotificationDeliveriesRequest(filters, context) {
+  return request(`/api/platform/v1/notification-deliveries?${new URLSearchParams(filters)}`, context);
+}
+
+export function retryNotificationDeliveryRequest(eventId, input, context) {
+  return request(`/api/platform/v1/notification-deliveries/${encodeURIComponent(eventId)}/retry`, {
+    ...context, method: "POST", body: input
+  });
+}
+
+export function notificationDeliveryHealthRequest(context) {
+  return request("/api/platform/v1/notification-deliveries/health", context);
+}
+
+export function notificationDeliveryHistoryRequest(eventId, pagination, context) {
+  return request(`/api/platform/v1/notification-deliveries/${encodeURIComponent(eventId)}/history?${new URLSearchParams(pagination)}`, context);
 }

@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth-provider";
 import { GlobalLoader } from "@/components/global-loader";
 import { Status } from "@/components/dashboard-primitives";
 import { TablePagination } from "@/components/table-pagination";
+import { StorePayments } from "@/components/store-payments";
 import { canUser, tenantIdForUser } from "@/lib/auth-routing";
 import { assignStoreWarehousesRequest, createStoreRequest, createStoreSlotRequest,
   createStoreZoneRequest, generateStoreSlotsRequest, listStoresRequest, storeDetailsRequest,
@@ -97,6 +98,7 @@ function WarehouseDialog({ accessToken, items, onClose, onSaved, storeId, tenant
 export default function StoresPage() {
   const { accessToken, activeTenantId, user } = useAuth(); const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const canManage = canUser(user, "admin", "settings.store.manage", tenantId);
+  const isOwner = user?.assignments?.some((role) => role.tenantId === tenantId && role.scopeType === "TENANT" && role.roleKey === "tenant_owner");
   const [filters, setFilters] = useState({ search: "", status: "ALL", page: 1, pageSize: 10 });
   const [draftSearch, setDraftSearch] = useState(""); const [result, setResult] = useState(null);
   const [selectedId, setSelectedId] = useState(null); const [details, setDetails] = useState(null);
@@ -129,6 +131,7 @@ export default function StoresPage() {
         <section className="store-ops-section"><div className="store-ops-heading"><div><p className="eyebrow">Live booking capacity</p><h3>Upcoming delivery slots</h3></div>{canManage ? <button className="button button-success button-compact" disabled={generating || !details.templates.length} onClick={generate} type="button"><Sparkles aria-hidden="true" size={15} />{generating ? "Generating..." : `Generate ${details.store.slotHorizonDays} days`}</button> : null}</div>{instancesByDay.length ? <div className="store-slot-days">{instancesByDay.map(([date, slots]) => <article key={date}><header><strong>{shortDate(date)}</strong><span>{slots.length} slots</span></header><div>{slots.map((slot) => { const available = slot.orderCapacity - slot.reservedOrders; return <span key={slot.id}><small>{shortTime(slot.startsAt)}–{shortTime(slot.endsAt)}</small><strong>{slot.zoneName}</strong><em>{available}/{slot.orderCapacity} open</em></span>; })}</div></article>)}</div> : <div className="store-inline-empty"><CalendarDays aria-hidden="true" size={20} /><span><strong>No upcoming slots</strong><small>Generate capacity from the active weekly schedules.</small></span></div>}</section>
         <section className="store-ops-section"><div className="store-ops-heading"><div><p className="eyebrow">Fulfilment connection</p><h3>Assigned warehouses</h3></div>{canManage ? <button className="text-action" onClick={() => setDialog({ type: "warehouses" })} type="button"><Edit3 aria-hidden="true" size={14} />Manage</button> : null}</div><div className="store-assigned-list">{details.warehouses.filter((item) => item.assigned).map((item) => <span key={item.id}><Warehouse aria-hidden="true" size={17} /><span><strong>{item.name}</strong><small>{item.code} · {item.city}</small></span></span>)}{!details.warehouses.some((item) => item.assigned) ? <div className="store-inline-empty"><Warehouse aria-hidden="true" size={20} /><span><strong>No warehouse assigned</strong><small>Connect stock locations used to fulfil this store.</small></span></div> : null}</div></section></> : <div className="empty-workspace"><Store aria-hidden="true" size={28} /><h3>Select a store</h3><p>Choose a location to manage its operations.</p></div>}</section>
     </section>
+    {isOwner && details && <StorePayments key={`${tenantId}:${details.store.id}`} storeId={details.store.id} storeName={details.store.name} tenantId={tenantId} accessToken={accessToken} Frame={DialogFrame} />}
     {dialog?.type === "store" ? <StoreDialog accessToken={accessToken} item={dialog.item} onClose={() => setDialog(null)} onSaved={refresh} tenantId={tenantId} /> : null}
     {dialog?.type === "zone" ? <ZoneDialog accessToken={accessToken} item={dialog.item} onClose={() => setDialog(null)} onSaved={refresh} storeId={details.store.id} tenantId={tenantId} /> : null}
     {dialog?.type === "slot" ? <SlotDialog accessToken={accessToken} item={dialog.item} onClose={() => setDialog(null)} onSaved={refresh} storeId={details.store.id} tenantId={tenantId} zones={details.zones} /> : null}

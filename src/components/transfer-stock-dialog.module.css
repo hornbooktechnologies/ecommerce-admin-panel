@@ -1,0 +1,8 @@
+.transfer :global(.serial-transfer-head) { flex-wrap: wrap; gap: 12px; }
+.transfer :global(.serial-transfer-head) > span { min-width: 0; overflow-wrap: anywhere; }
+.transfer :global(.serial-transfer-head) button { min-height: 44px; }
+.transfer :global(.serial-transfer-grid) { max-height: none; overflow: visible; }
+.transfer :global(.serial-transfer-grid) button { min-height: 48px; }
+.transfer :global(.serial-transfer-grid) strong { white-space: normal; overflow-wrap: anywhere; }
+.transfer button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.transfer :global(.serial-transfer-head) { margin-block: 12px; }

@@ -1,0 +1,50 @@
+COUNT STOCK - REVIEW BEFORE ADJUSTMENT
+
+Location: Inventory > Count on an existing stock balance.
+Implemented in D:\Global-ecommerce\ecommerce-admin-panel.
+
+Flow
+1. Load current balance details. For batch-tracked stock, select a batch.
+2. Enter the physical quantity present (not the quantity to add or remove),
+   select a reason, and provide adjustment notes.
+3. Review the system snapshot, final count, expected increase/decrease and
+   reserved/quarantined quantity. Batch review includes expected total SKU
+   on-hand quantity across this warehouse.
+4. Edit count or Confirm adjustment.
+
+Safeguards
+- Physical count is blank initially; it is not copied from system stock.
+- Selecting another batch clears the count so it must be physically confirmed.
+- Six-decimal quantities supported; unchanged counts and counts below committed
+  stock are blocked before posting. The existing API validates all rules again.
+- Serialized products remain restricted to individual serial reconciliation.
+- Dirty dismissal requires confirmation; native browser unload prompt where supported.
+- Access-token refresh no longer overwrites the count.
+- Pending writes cannot be duplicated by repeated confirmation clicks.
+- A read-only stock recheck precedes posting. If stock/reservations/tracking changed,
+  update the snapshot, keep user input, and require review again without posting.
+- This preflight is NOT an atomic expected-version check. Stock can still change
+  between that read and the API transaction. The UI labels the delta as expected;
+  the existing server computes the final delta against live stock.
+- A failed preflight sends no adjustment. Ambiguous POST failures advise checking
+  history before retrying. No server idempotency or automatic retry added.
+- Tenant-keyed dialog and unmount guards prevent an old async completion from
+  closing a new tenant's form. An already-sent write may still finish.
+- Body portal, focused headings/errors, Tab containment, responsive shared receipt
+  styles and reduced-motion support follow UI/UX skill guidance.
+- No dependencies, migration or backend changes. No actual stock modified.
+
+Verification
+Source/diff inspection only. Lint, tests, build and browser checks not run.
+Manual verification pending:
+- Whole balance and individual batch, increased/decreased/zero physical count.
+- Equal count, below reserved/quarantined, six-decimal count, whitespace notes.
+- Serialized balance, missing batch, failed detail load/retry.
+- Review/edit, unsaved Cancel/X/Escape/backdrop, focus and mobile footer.
+- Token refresh while typing, tenant switch, repeat Confirm clicks.
+- Changed stock during preflight requires review and sends no adjustment.
+- Failed preflight, successful post and ambiguous post failure behavior.
+- Light/dark themes, short landscape view and reduced motion.
+
+Next candidate
+Apply review-before-post and unsaved-change protection to warehouse transfers.
