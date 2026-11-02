@@ -15,13 +15,23 @@ function PasswordControl({ autoFocus, describedBy, name, onChange, value }) {
 export default function ResetPasswordPage() {
   const router = useRouter();
   const errorRef = useRef(null);
+  const linkRead = useRef(false);
   const [token, setToken] = useState(null);
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { setToken(new URLSearchParams(window.location.search).get("token") || ""); }, []);
+  useEffect(() => {
+    if (linkRead.current) return;
+    linkRead.current = true;
+    const url = new URL(window.location.href);
+    // New emails use fragments, which are not sent in HTTP requests/referrers.
+    // Accept older links during the transition, then remove either token from URL.
+    const value = new URLSearchParams(url.hash.slice(1)).get("token") || url.searchParams.get("token") || "";
+    setToken(value);
+    if (value) { url.searchParams.delete("token"); url.hash = ""; window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`); }
+  }, []);
   function update(event) { setForm((current) => ({ ...current, [event.target.name]: event.target.value })); setErrors((current) => ({ ...current, [event.target.name]: undefined })); setError(""); }
   async function submit(event) {
     event.preventDefault();

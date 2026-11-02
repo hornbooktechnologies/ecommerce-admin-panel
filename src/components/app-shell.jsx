@@ -19,12 +19,15 @@ import {
   CreditCard,
   FileClock,
   FileSpreadsheet,
+  FileText,
   LayoutDashboard,
   PanelsTopLeft,
   KeyRound,
   LockKeyhole,
   LogOut,
+  Mail,
   Menu,
+  MessageSquare,
   PackageCheck,
   PackageSearch,
   PanelLeftClose,
@@ -45,6 +48,7 @@ import { AuthGuard, useAuth } from "@/components/auth-provider";
 import { AccountPasswordDialog } from "@/components/account-password-dialog";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationInbox } from "@/components/notification-inbox";
+import { CommerceBackground } from "@/components/commerce-background";
 import { navigationForUser, merchantIdForUser } from "@/lib/auth-routing";
 import { groupNavigation } from "@/lib/inbox-navigation";
 
@@ -58,10 +62,13 @@ const icons = {
   customers: ContactRound,
   promotions: TicketPercent,
   ratings: Star,
+  questions: MessageSquare,
   catalog: Tags,
   inventory: Boxes,
   stores: Store,
   homepage: PanelsTopLeft,
+  newsletter: Mail,
+  content: FileText,
   vendors: BriefcaseBusiness,
   returns: ArchiveRestore,
   warranties: BadgeCheck,
@@ -87,11 +94,12 @@ const areaLabels = {
   vendor: "Seller workspace"
 };
 
-export function AppShell({ area, currentPath, eyebrow, title, description, action, loadingFallback, children }) {
+export function AppShell({ area, currentPath, eyebrow, title, description, action, loadingFallback, backgroundPaused = false, children }) {
   return (
     <AuthGuard area={area} loadingFallback={loadingFallback ? <AppShellLoading area={area}>{loadingFallback}</AppShellLoading> : null}>
       <AppShellContent
         action={action}
+        backgroundPaused={backgroundPaused}
         area={area}
         currentPath={currentPath}
         description={description}
@@ -203,7 +211,7 @@ function AppShellLoading({ area, children }) {
   );
 }
 
-function AppShellContent({ area, currentPath, eyebrow, title, description, action, children }) {
+function AppShellContent({ area, currentPath, eyebrow, title, description, action, backgroundPaused = false, children }) {
   const router = useRouter();
   const { user, logout, activeTenantId, selectTenant } = useAuth();
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -317,7 +325,7 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
   return (
     <div className="app-frame" data-sidebar-collapsed={sidebarCollapsed || undefined}>
       <a className="skip-link" href="#workspace">Skip to workspace</a>
-      <AmbientScene />
+      {area === "admin" && currentPath === "/admin" ? <CommerceBackground paused={backgroundPaused} /> : <AmbientScene />}
       <aside className="sidebar" data-open={navigationOpen || undefined} id="workspace-navigation" aria-label={`${areaNames[area]} navigation`}>
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true"><ShoppingBag size={19} strokeWidth={2.1} /></span>

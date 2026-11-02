@@ -1,0 +1,21 @@
+.panel { padding: 24px; border-bottom: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.panel h3 { font-size: calc((19px) * var(--theme-text-scale, 1)); margin: 0 0 12px; line-height: 1.5; }
+.panel p, .panel small { font-size: calc((13px) * var(--theme-text-scale, 1)); line-height: 1.7; color: var(--muted); margin: 10px 0; }
+.panel fieldset { padding: 0; margin: 20px 0; border: 0; }
+.panel legend { font-weight: 700; margin-bottom: 8px; font-size: calc((14px) * var(--theme-text-scale, 1)); }
+.option { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 0; font-size: calc((14px) * var(--theme-text-scale, 1)); cursor: pointer; }
+.option input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: var(--accent); }
+.required { background: var(--accent-soft); padding: 14px 16px; border-radius: calc(10px * var(--theme-radius-scale, 1)); }
+.required p, .required small { color: var(--ink); }
+.required strong { font-size: calc((14px) * var(--theme-text-scale, 1)); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 18px; }
+.panel button { min-height: 44px; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: calc(9px * var(--theme-radius-scale, 1)); background: var(--surface); color: var(--ink); font: inherit; font-size: calc((13px) * var(--theme-text-scale, 1)); cursor: pointer; }
+.panel .save { background: var(--action); border-color: var(--action); color: var(--action-ink); font-weight: 700; }
+.panel .reload { background: transparent; text-decoration: underline; text-underline-offset: 4px; border: 0; padding-inline: 0; }
+.panel .error, .panel .success { padding: 12px; border-radius: calc(8px * var(--theme-radius-scale, 1)); }
+.panel .error { color: var(--danger); background: var(--danger-soft); }
+.panel .success { color: var(--positive); background: var(--positive-soft); }
+.panel .unsaved { color: var(--warning); }
+.panel :is(button, input):focus-visible, .panel h3:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.panel button:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 600px) { .panel { padding: 20px 16px; } .actions button { flex: 1 1 auto; } }

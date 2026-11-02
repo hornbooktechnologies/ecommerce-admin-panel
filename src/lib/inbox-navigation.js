@@ -18,6 +18,11 @@ export function notificationDestination(notification, { area, tenantId, merchant
       ? `/platform/tenants/${target.id}` : null;
   }
   if (!uuid.test(tenantId || "")) return null;
+  if(target.type==='PRODUCT_QUESTION') {
+    const path=area==='admin'?'/admin/questions':area==='vendor'&&target.merchantId===merchantId?'/vendor/questions':null;
+    if(!path||!items.some(item=>item.href===path))return null;
+    return `${path}?${new URLSearchParams({notificationTarget:target.id,notificationTenant:tenantId,...(area==='vendor'?{notificationMerchant:merchantId}:{})})}`;
+  }
   const path = area === "admin" ? { ORDER: "/admin/orders", RETURN: "/admin/returns", INVENTORY_BALANCE: "/admin/inventory", WARRANTY_CLAIM: "/admin/warranties", BULK_IMPORT: "/admin/bulk-operations", PRODUCT_APPROVAL: "/admin/catalog/products", VENDOR_APPROVAL: "/admin/vendors" }[target.type]
     : area === "vendor" && target.type === "SELLER_ORDER" && target.merchantId === merchantId ? "/vendor/orders" : null;
   if (!path || !items.some(item => item.href === path)) return null;

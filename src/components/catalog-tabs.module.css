@@ -1,0 +1,2 @@
+.tabs { display:flex; flex-wrap:wrap; min-width:0; max-width:100%; }
+.tabs a { display:inline-flex; align-items:center; min-height:44px; }

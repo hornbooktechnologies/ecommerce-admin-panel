@@ -1,4 +1,4 @@
-.panel { min-width: 0; padding: clamp(16px, 2.5vw, 28px); border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); }
+.panel { min-width: 0; padding: clamp(16px, 2.5vw, 28px); border: 1px solid var(--line); border-radius: calc(16px * var(--theme-radius-scale, 1)); background: var(--surface); color: var(--ink); }
 .header, .title, .status { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .header { justify-content: space-between; gap: 20px; }
 .title { flex-wrap: nowrap; align-items: flex-start; }
@@ -11,18 +11,18 @@
 .status { margin-top: 20px; }
 .status small, .help, .footer, .timestamps dt, .metrics dt { color: var(--muted); }
 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
-.metrics > div { background: var(--canvas); padding: 16px; border-radius: 10px; border: 1px solid var(--line); min-width: 0; }
+.metrics > div { background: var(--canvas); padding: 16px; border-radius: calc(10px * var(--theme-radius-scale, 1)); border: 1px solid var(--line); min-width: 0; }
 .metrics dt { font-size: .82rem; line-height: 1.5; }
 .metrics dd { margin: 12px 0 0; font-size: 1.65rem; font-weight: 700; overflow-wrap: anywhere; }
 .alerts { display: grid; gap: 12px; padding: 0; margin: 20px 0; list-style: none; }
-.alerts li { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border-radius: 10px; }
+.alerts li { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border-radius: calc(10px * var(--theme-radius-scale, 1)); }
 .alerts svg { flex: 0 0 auto; margin-top: 2px; }
 .alerts h3 { margin: 0; font-size: .95rem; }
 .alerts p { margin: 6px 0 0; line-height: 1.6; font-size: .9rem; overflow-wrap: anywhere; }
 .danger, .error { background: var(--danger-soft); color: var(--danger); }
 .warning { background: var(--warning-soft); color: var(--warning); }
-.error { padding: 16px; border-radius: 10px; line-height: 1.6; }
-.quiet { background: var(--positive-soft); color: var(--positive); border-radius: 10px; padding: 16px; line-height: 1.6; }
+.error { padding: 16px; border-radius: calc(10px * var(--theme-radius-scale, 1)); line-height: 1.6; }
+.quiet { background: var(--positive-soft); color: var(--positive); border-radius: calc(10px * var(--theme-radius-scale, 1)); padding: 16px; line-height: 1.6; }
 .timestamps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 24px 0; }
 .timestamps dt { font-size: .8rem; margin-bottom: 6px; }
 .timestamps dd { margin: 0; font-size: .85rem; overflow-wrap: anywhere; }

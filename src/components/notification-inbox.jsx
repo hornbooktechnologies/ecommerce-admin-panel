@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Boxes, Building2, ClipboardCheck, FileSpreadsheet, ShieldCheck, CheckCheck, ArrowUpRight, ChevronLeft, ChevronRight, RefreshCw, ShoppingBag, RotateCcw, X } from "lucide-react";
+import { Bell, Boxes, Building2, ClipboardCheck, FileSpreadsheet, ShieldCheck, CheckCheck, ArrowUpRight, ChevronLeft, ChevronRight, RefreshCw, ShoppingBag, RotateCcw, MessageSquare, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { listInboxRequest, inboxUnreadRequest, markInboxRequest, markAllInboxRequest } from "@/lib/api-client";
 import { notificationDestination, notificationTime } from "@/lib/inbox-navigation";
+import { InboxPreferences } from "@/components/inbox-preferences";
 
 const typeLabels = { ORDERS: "Orders & delivery", RETURNS: "Returns & exchanges", PAYMENTS: "Payments",
-  INVENTORY: "Inventory", WARRANTIES: "Warranties", IMPORTS: "Imports", APPROVALS: "Approvals", TENANTS: "Tenant updates" };
+  INVENTORY: "Inventory", WARRANTIES: "Warranties", IMPORTS: "Imports", APPROVALS: "Approvals", TENANTS: "Tenant updates", QUESTIONS:'Product questions' };
 
 export function NotificationInbox({ area, tenantId, merchantId, items }) {
   const { accessToken } = useAuth();
@@ -25,6 +26,7 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
   const [pending, setPending] = useState(false), [refresh, setRefresh] = useState(0);
   const dialogRef = useRef(null), triggerRef = useRef(null), allFilterRef = useRef(null);
   const closeTimer = useRef(null), mutation = useRef(null);
+  const [showPreferences, setShowPreferences] = useState(false), [preferencesBusy, setPreferencesBusy] = useState(false);
   const view = `${filter}:${page}:${category}:${search}`;
   const result = data?.view === view ? data : null;
 
@@ -75,7 +77,7 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
   }, [accessToken, area, tenantId, merchantId, open, filter, page, category, search, refresh, pending]);
 
   function close(afterClose) {
-    if (closing) return;
+    if (closing || preferencesBusy) return;
     setClosing(true);
     const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 160;
     closeTimer.current = window.setTimeout(() => {
@@ -106,8 +108,8 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
   }
 
   const platform = area === "platform";
-  const types = platform ? ["TENANTS"] : area === "vendor" ? ["ORDERS"]
-    : ["ORDERS", "RETURNS", "PAYMENTS", "INVENTORY", "WARRANTIES", "IMPORTS", "APPROVALS"];
+  const types = platform ? ["TENANTS"] : area === "vendor" ? ["ORDERS",'QUESTIONS']
+    : ["ORDERS", "RETURNS", "PAYMENTS", "INVENTORY", "WARRANTIES", "IMPORTS", "APPROVALS", 'QUESTIONS'];
   const scopeLabel = platform ? "Across tenants" : "Current workspace";
   const emptyMessage = platform
     ? "Tenant lifecycle updates appear here. Open a tenant to check its current status."
@@ -135,7 +137,7 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
         if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) close();
       }}>
       <header className="notification-header"><div><p className="eyebrow">{platform ? "Platform updates" : "Workspace updates"}</p><h2 id="notification-title">Notifications</h2><p>{count === null ? scopeLabel : `${count} unread across all types · ${scopeLabel}`}</p></div>
-        <button className="icon-button" type="button" aria-label="Close notifications" autoFocus onClick={() => close()}><X size={20} aria-hidden="true" /></button></header>
+        <button className="icon-button" type="button" aria-label="Close notifications" disabled={preferencesBusy} autoFocus onClick={() => close()}><X size={20} aria-hidden="true" /></button></header>
       <div className="notification-toolbar">
         <div className="notification-filters" role="group" aria-label="Filter notifications">
           <button type="button" ref={allFilterRef} aria-pressed={filter === "ALL"} disabled={pending} onClick={() => { setFilter("ALL"); setPage(1); }}>All</button>
@@ -146,6 +148,8 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
         <button className="icon-button" type="button" disabled={pending || loading} aria-label="Refresh notifications" onClick={() => { setActionError(""); setRefresh(n => n + 1); }}><RefreshCw size={17} aria-hidden="true" /></button>
       </div>
       <div className="notification-scroll" aria-busy={loading || pending}>
+        {area === "admin" ? <div style={{ padding: "12px 24px", borderBottom: "1px solid var(--line)" }}><button className="notification-text-action" type="button" disabled={preferencesBusy || pending} aria-expanded={showPreferences} onClick={() => setShowPreferences((value) => !value)}>{showPreferences ? "Hide preferences" : "Notification preferences"}</button></div> : null}
+        {area === "admin" && showPreferences ? <InboxPreferences accessToken={accessToken} tenantId={tenantId} onBusy={setPreferencesBusy} /> : null}
         <form className="notification-search" role="search" aria-label="Search notifications" onSubmit={e => {
           e.preventDefault(); if (pending) return; setSearch(searchDraft.trim()); setPage(1); setActionError(""); setRefresh(n => n + 1);
         }}>
@@ -169,13 +173,13 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
           : !result.items.length ? <div className="notification-empty"><Bell size={30} aria-hidden="true" /><h3>{narrowed ? "No matching updates" : filter === "UNREAD" ? "You’re all caught up" : "No updates yet"}</h3><p>{narrowed ? "Try another type or search, or clear these filters to see other updates." : filter === "UNREAD" ? (platform ? "There are no unread platform updates." : "There are no unread updates in this workspace.") : emptyMessage}</p></div>
           : <ol className="notification-list">{result.items.map(item => {
             const href = notificationDestination(item, { area, tenantId, merchantId, items });
-            const Icon = item.category === "RETURNS" ? RotateCcw : item.category === "INVENTORY" ? Boxes : item.category === "WARRANTIES" ? ShieldCheck : item.category === "IMPORTS" ? FileSpreadsheet : item.category === "APPROVALS" ? ClipboardCheck : item.category === "TENANTS" ? Building2 : ShoppingBag;
+            const Icon = item.category === 'QUESTIONS' ? MessageSquare : item.category === "RETURNS" ? RotateCcw : item.category === "INVENTORY" ? Boxes : item.category === "WARRANTIES" ? ShieldCheck : item.category === "IMPORTS" ? FileSpreadsheet : item.category === "APPROVALS" ? ClipboardCheck : item.category === "TENANTS" ? Building2 : ShoppingBag;
             return <li key={item.id} data-unread={!item.readAt || undefined}>
               <span className="notification-item-icon"><Icon size={18} aria-hidden="true" /></span>
               <div className="notification-copy"><div className="notification-item-title"><h3>{item.title}</h3>{!item.readAt ? <span>Unread</span> : null}</div>
                 <p>{item.message}</p><time dateTime={item.createdAt}>{notificationTime(item.createdAt)} IST</time>
                 <div className="notification-item-actions">
-                  {href ? <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item, href)}>Open {item.target.type === "RETURN" ? "return" : item.target.type === "INVENTORY_BALANCE" ? "inventory" : item.target.type === "WARRANTY_CLAIM" ? "warranties" : item.target.type === "BULK_IMPORT" ? "imports" : item.target.type === "PRODUCT_APPROVAL" ? "catalog" : item.target.type === "VENDOR_APPROVAL" ? "vendors" : item.target.type === "TENANT" ? "tenant" : "order"}<ArrowUpRight size={16} aria-hidden="true" /></button> : <small>Record link unavailable</small>}
+                  {href ? <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item, href)}>Open {item.target.type==='PRODUCT_QUESTION'?'question':item.target.type === "RETURN" ? "return" : item.target.type === "INVENTORY_BALANCE" ? "inventory" : item.target.type === "WARRANTY_CLAIM" ? "warranties" : item.target.type === "BULK_IMPORT" ? "imports" : item.target.type === "PRODUCT_APPROVAL" ? "catalog" : item.target.type === "VENDOR_APPROVAL" ? "vendors" : item.target.type === "TENANT" ? "tenant" : "order"}<ArrowUpRight size={16} aria-hidden="true" /></button> : <small>Record link unavailable</small>}
                   <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item)} aria-label={`Mark ${item.title} ${item.readAt ? "unread" : "read"}`}>Mark {item.readAt ? "unread" : "read"}</button>
                 </div>
               </div>

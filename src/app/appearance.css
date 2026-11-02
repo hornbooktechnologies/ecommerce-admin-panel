@@ -1,0 +1,6 @@
+@font-face { font-family:'Commerce DM Sans';src:url('/fonts/commerce-dm-sans.woff2') format('woff2');font-style:normal;font-weight:400 700;font-display:swap; }
+html[data-config-appearance] body { font-family:var(--theme-body-font,"Manrope Variable",sans-serif);font-style:var(--theme-font-style,normal);font-weight:var(--theme-body-weight,400);line-height:var(--theme-line-height,1.5); }
+html[data-config-appearance] :is(h1,h2,h3,h4,h5,h6) { font-family:var(--theme-heading-font,"Manrope Variable",sans-serif); }
+html[data-config-appearance] .topbar { background:color-mix(in srgb,var(--theme-header-bg,var(--surface)) 86%,transparent);color:var(--theme-header-ink,var(--ink)); }
+html[data-config-appearance] .sidebar .primary-nav .nav-link[aria-current="page"] { background:var(--sidebar-active);color:var(--sidebar-active-ink,var(--sidebar-ink)); }
+html[data-config-appearance] .sidebar .primary-nav .nav-link[aria-current="page"] :is(.nav-link-label,.nav-link-arrow) { color:var(--sidebar-active-ink,var(--sidebar-ink)); }

@@ -3,6 +3,20 @@ const apiBase = apiOrigin.replace(/\/$/, "");
 const authBase = "/api/admin/v1/auth";
 const platformTenantBase = "/api/platform/v1/tenants";
 const platformAccessBase = "/api/platform/v1/access";
+export function questionsRequest(path,context={},area='admin') {
+  return request(`/api/${area==='vendor'?'vendor':'admin'}/v1/questions${path}`,context);
+}
+
+export function sizeGuidesRequest(path, context = {}) {
+  return request(`/api/admin/v1/catalog${path}`, context);
+}
+export function specificationsRequest(path, context = {}) {
+  return request(`/api/admin/v1/catalog${path}`, context);
+}
+
+export function platformDashboardRequest(context) {
+  return request("/api/platform/v1/dashboard", context);
+}
 
 export function homepageSectionsRequest(storeId, accessToken, tenantId) {
   return request(`/api/admin/v1/stores/${storeId}/homepage-sections`, { accessToken, tenantId });
@@ -41,6 +55,34 @@ export class ApiError extends Error {
     this.status = status;
     this.details = details;
   }
+}
+
+export function newsletterSubscribersRequest(filters, context) {
+  return request(`/api/admin/v1/newsletter/subscribers?${new URLSearchParams(filters)}`, context);
+}
+
+export function contentStoresRequest(search, context) {
+  return request(`/api/admin/v1/content-pages/stores?${new URLSearchParams({ search })}`, context);
+}
+export function storeContentRequest(storeId, pageKey, context) {
+  return request(`/api/admin/v1/stores/${storeId}/content-pages/${pageKey}`, context);
+}
+export function saveStoreContentRequest(storeId, pageKey, input, context) {
+  return request(`/api/admin/v1/stores/${storeId}/content-pages/${pageKey}`, { ...context, method: "PUT", body: input });
+}
+export function previewStoreContentRequest(storeId, pageKey, document, context) {
+  return request(`/api/admin/v1/stores/${storeId}/content-pages/${pageKey}/preview`, { ...context, method: "POST", body: { document } });
+}
+export function publishStoreContentRequest(storeId, pageKey, revision, context) {
+  return request(`/api/admin/v1/stores/${storeId}/content-pages/${pageKey}/publish`, { ...context, method: "POST", body: { revision, reviewed: true } });
+}
+export function withdrawStoreContentRequest(storeId, pageKey, revision, context) {
+  return request(`/api/admin/v1/stores/${storeId}/content-pages/${pageKey}/withdraw`, { ...context, method: "POST", body: { revision, confirmed: true } });
+}
+export function unsubscribeNewsletterRequest(subscriberId, input, context) {
+  return request(`/api/admin/v1/newsletter/subscribers/${encodeURIComponent(subscriberId)}/unsubscribe`, {
+    ...context, method: "POST", body: input
+  });
 }
 
 let managedAccessToken = null;
@@ -177,6 +219,12 @@ function inboxBase(area) {
   if (!["admin", "vendor", "platform"].includes(area)) throw new Error("Unsupported notification area");
   return `/api/${area}/v1/notifications`;
 }
+export function inboxPreferencesRequest(area, context) {
+  return request(`${inboxBase(area)}/preferences`, context);
+}
+export function saveInboxPreferencesRequest(area, input, context) {
+  return request(`${inboxBase(area)}/preferences`, { ...context, method: "PUT", body: input });
+}
 
 export function listInboxRequest(area, { filter = "ALL", page = 1, category = "ALL", search = "" } = {}, context) {
   const query = new URLSearchParams({ filter, page: String(page), pageSize: "10" });
@@ -252,7 +300,7 @@ export function dashboardOverviewRequest(accessToken, tenantId) {
 
 export function listProductRatingsRequest(filters, accessToken, tenantId) {
   const query = new URLSearchParams({ search: filters.search || "", status: filters.status || "ALL",
-    rating: String(filters.rating || 0), productId: filters.productId || "",
+    rating: String(filters.rating || 0), productId: filters.productId || "",hasPendingPhotos:String(Boolean(filters.hasPendingPhotos)),
     page: String(filters.page || 1), pageSize: String(filters.pageSize || 10) });
   return request(`/api/admin/v1/ratings?${query}`, { accessToken, tenantId });
 }
@@ -260,6 +308,10 @@ export function listProductRatingsRequest(filters, accessToken, tenantId) {
 export function productRatingOptionsRequest(accessToken, tenantId) {
   return request("/api/admin/v1/ratings/options", { accessToken, tenantId });
 }
+
+export const reviewPhotosRequest=(ratingId,accessToken,tenantId)=>request(`/api/admin/v1/ratings/${ratingId}/photos`,{accessToken,tenantId});
+export const reviewPhotoFileRequest=(ratingId,photoId,accessToken,tenantId)=>requestFile(`/api/admin/v1/ratings/${ratingId}/photos/${photoId}/file`,{accessToken,tenantId});
+export const moderateReviewPhotoRequest=(ratingId,photoId,body,accessToken,tenantId)=>request(`/api/admin/v1/ratings/${ratingId}/photos/${photoId}/moderate`,{method:'POST',body,accessToken,tenantId});
 
 export function productRatingDetailsRequest(ratingId, accessToken, tenantId) {
   return request(`/api/admin/v1/ratings/${ratingId}`, { accessToken, tenantId });
