@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useState } from "react";
 import { Activity, TriangleAlert } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
@@ -17,6 +18,8 @@ function displayDate(value) {
 }
 
 export function WorkerHealth({ refreshKey, paused }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken } = useAuth();
   const [health, setHealth] = useState(null);
   const [error, setError] = useState("");
@@ -72,7 +75,7 @@ export function WorkerHealth({ refreshKey, paused }) {
     <p className={styles.srOnly} role="status" aria-atomic="true">{announcement}</p>
     <div className={styles.status}>
       <Status tone={error ? "danger" : health ? tones[health.workerStatus] : "neutral"}>
-        {error ? "Unavailable" : health ? labels[health.workerStatus] || "Unknown" : "Checking…"}
+        {error ? _uiText("Unavailable") : health ? labels[health.workerStatus] || "Unknown" : "Checking…"}
       </Status>
       <small>{snapshotOnly ? "Snapshot only · live refresh paused" : loading ? "Checking current state…" : "Health refreshes every 30 seconds while this page is visible"}</small>
     </div>

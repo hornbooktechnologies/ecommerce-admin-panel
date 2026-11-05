@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Boxes, Building2, ClipboardCheck, FileSpreadsheet, ShieldCheck, CheckCheck, ArrowUpRight, ChevronLeft, ChevronRight, RefreshCw, ShoppingBag, RotateCcw, MessageSquare, X } from "lucide-react";
@@ -12,6 +13,8 @@ const typeLabels = { ORDERS: "Orders & delivery", RETURNS: "Returns & exchanges"
   INVENTORY: "Inventory", WARRANTIES: "Warranties", IMPORTS: "Imports", APPROVALS: "Approvals", TENANTS: "Tenant updates", QUESTIONS:'Product questions' };
 
 export function NotificationInbox({ area, tenantId, merchantId, items }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false), [closing, setClosing] = useState(false);
@@ -136,29 +139,29 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
         const bounds = e.currentTarget.getBoundingClientRect();
         if (e.clientX < bounds.left || e.clientX > bounds.right || e.clientY < bounds.top || e.clientY > bounds.bottom) close();
       }}>
-      <header className="notification-header"><div><p className="eyebrow">{platform ? "Platform updates" : "Workspace updates"}</p><h2 id="notification-title">Notifications</h2><p>{count === null ? scopeLabel : `${count} unread across all types · ${scopeLabel}`}</p></div>
+      <header className="notification-header"><div><p className="eyebrow">{platform ? "Platform updates" : "Workspace updates"}</p><h2 id="notification-title">{_uiText("Notifications")}</h2><p>{count === null ? scopeLabel : `${count} unread across all types · ${scopeLabel}`}</p></div>
         <button className="icon-button" type="button" aria-label="Close notifications" disabled={preferencesBusy} autoFocus onClick={() => close()}><X size={20} aria-hidden="true" /></button></header>
       <div className="notification-toolbar">
         <div className="notification-filters" role="group" aria-label="Filter notifications">
-          <button type="button" ref={allFilterRef} aria-pressed={filter === "ALL"} disabled={pending} onClick={() => { setFilter("ALL"); setPage(1); }}>All</button>
-          <button type="button" aria-pressed={filter === "UNREAD"} disabled={pending} onClick={() => { setFilter("UNREAD"); setPage(1); }}>Unread</button>
+          <button type="button" ref={allFilterRef} aria-pressed={filter === "ALL"} disabled={pending} onClick={() => { setFilter("ALL"); setPage(1); }}>{_uiText("All")}</button>
+          <button type="button" aria-pressed={filter === "UNREAD"} disabled={pending} onClick={() => { setFilter("UNREAD"); setPage(1); }}>{_uiText("Unread")}</button>
         </div>
         <button type="button" className="notification-text-action" disabled={narrowed || pending || loading || !result?.readThroughId || !count}
-          onClick={() => update(null)}><CheckCheck size={17} aria-hidden="true" />Mark all read</button>
+          onClick={() => update(null)}><CheckCheck size={17} aria-hidden="true" />{_uiText("Mark all read")}</button>
         <button className="icon-button" type="button" disabled={pending || loading} aria-label="Refresh notifications" onClick={() => { setActionError(""); setRefresh(n => n + 1); }}><RefreshCw size={17} aria-hidden="true" /></button>
       </div>
       <div className="notification-scroll" aria-busy={loading || pending}>
-        {area === "admin" ? <div style={{ padding: "12px 24px", borderBottom: "1px solid var(--line)" }}><button className="notification-text-action" type="button" disabled={preferencesBusy || pending} aria-expanded={showPreferences} onClick={() => setShowPreferences((value) => !value)}>{showPreferences ? "Hide preferences" : "Notification preferences"}</button></div> : null}
+        {area === "admin" ? <div style={{ padding: "12px 24px", borderBottom: "1px solid var(--line)" }}><button className="notification-text-action" type="button" disabled={preferencesBusy || pending} aria-expanded={showPreferences} onClick={() => setShowPreferences((value) => !value)}>{showPreferences ? "Hide preferences" : _uiText("Notification preferences")}</button></div> : null}
         {area === "admin" && showPreferences ? <InboxPreferences accessToken={accessToken} tenantId={tenantId} onBusy={setPreferencesBusy} /> : null}
         <form className="notification-search" role="search" aria-label="Search notifications" onSubmit={e => {
           e.preventDefault(); if (pending) return; setSearch(searchDraft.trim()); setPage(1); setActionError(""); setRefresh(n => n + 1);
         }}>
           <fieldset disabled={pending}>
-            <label>Notification type<select value={category} onChange={e => { setCategory(e.target.value); setPage(1); setActionError(""); }}>
-              <option value="ALL">All types</option>{types.map(type => <option key={type} value={type}>{typeLabels[type]}</option>)}</select></label>
-            <label>Search updates<input ref={searchRef} type="search" maxLength={100} value={searchDraft} placeholder="Title or message"
+            <label>{_uiText("Notification type")}<select value={category} onChange={e => { setCategory(e.target.value); setPage(1); setActionError(""); }}>
+              <option value="ALL">{_uiText("All types")}</option>{types.map(type => <option key={type} value={type}>{typeLabels[type]}</option>)}</select></label>
+            <label>{_uiText("Search updates")}<input ref={searchRef} type="search" maxLength={100} value={searchDraft} placeholder="Title or message"
               onChange={e => setSearchDraft(e.target.value)} /></label>
-            <div className="notification-search-actions"><button className="notification-text-action" type="submit">Search</button>
+            <div className="notification-search-actions"><button className="notification-text-action" type="submit">{_uiText("Search")}</button>
               <button className="notification-text-action" type="button" disabled={!narrowed && !searchDraft} onClick={() => {
                 setCategory("ALL"); setSearch(""); setSearchDraft(""); setPage(1); setActionError(""); searchRef.current?.focus();
               }}>Clear search &amp; type</button></div>
@@ -168,7 +171,7 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
           {result && <p role="status">{result.total} {narrowed ? "matching " : ""}{filter === "UNREAD" ? "unread " : ""}updates</p>}
         </form>
         {actionError ? <p className="notification-error" role="alert">{actionError}</p> : null}
-        {error ? <div className="notification-empty"><Bell size={28} aria-hidden="true" /><h3>Updates unavailable</h3><p role="alert">{error}</p><button className="button button-secondary" type="button" onClick={() => setRefresh(n => n + 1)}>Try again</button></div>
+        {error ? <div className="notification-empty"><Bell size={28} aria-hidden="true" /><h3>Updates unavailable</h3><p role="alert">{error}</p><button className="button button-secondary" type="button" onClick={() => setRefresh(n => n + 1)}>{_uiText("Try again")}</button></div>
           : !result ? <div className="notification-skeleton" role="status" aria-label="Loading notifications">{[1, 2, 3].map(n => <span key={n}><i /><i /></span>)}</div>
           : !result.items.length ? <div className="notification-empty"><Bell size={30} aria-hidden="true" /><h3>{narrowed ? "No matching updates" : filter === "UNREAD" ? "You’re all caught up" : "No updates yet"}</h3><p>{narrowed ? "Try another type or search, or clear these filters to see other updates." : filter === "UNREAD" ? (platform ? "There are no unread platform updates." : "There are no unread updates in this workspace.") : emptyMessage}</p></div>
           : <ol className="notification-list">{result.items.map(item => {
@@ -176,10 +179,10 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
             const Icon = item.category === 'QUESTIONS' ? MessageSquare : item.category === "RETURNS" ? RotateCcw : item.category === "INVENTORY" ? Boxes : item.category === "WARRANTIES" ? ShieldCheck : item.category === "IMPORTS" ? FileSpreadsheet : item.category === "APPROVALS" ? ClipboardCheck : item.category === "TENANTS" ? Building2 : ShoppingBag;
             return <li key={item.id} data-unread={!item.readAt || undefined}>
               <span className="notification-item-icon"><Icon size={18} aria-hidden="true" /></span>
-              <div className="notification-copy"><div className="notification-item-title"><h3>{item.title}</h3>{!item.readAt ? <span>Unread</span> : null}</div>
+              <div className="notification-copy"><div className="notification-item-title"><h3>{item.title}</h3>{!item.readAt ? <span>{_uiText("Unread")}</span> : null}</div>
                 <p>{item.message}</p><time dateTime={item.createdAt}>{notificationTime(item.createdAt)} IST</time>
                 <div className="notification-item-actions">
-                  {href ? <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item, href)}>Open {item.target.type==='PRODUCT_QUESTION'?'question':item.target.type === "RETURN" ? "return" : item.target.type === "INVENTORY_BALANCE" ? "inventory" : item.target.type === "WARRANTY_CLAIM" ? "warranties" : item.target.type === "BULK_IMPORT" ? "imports" : item.target.type === "PRODUCT_APPROVAL" ? "catalog" : item.target.type === "VENDOR_APPROVAL" ? "vendors" : item.target.type === "TENANT" ? "tenant" : "order"}<ArrowUpRight size={16} aria-hidden="true" /></button> : <small>Record link unavailable</small>}
+                  {href ? <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item, href)}>Open {item.target.type==='PRODUCT_QUESTION'?'question':item.target.type === "RETURN" ? "return" : item.target.type === "INVENTORY_BALANCE" ? "inventory" : item.target.type === "WARRANTY_CLAIM" ? "warranties" : item.target.type === "BULK_IMPORT" ? "imports" : item.target.type === "PRODUCT_APPROVAL" ? "catalog" : item.target.type === "VENDOR_APPROVAL" ? _uiText("vendors") : item.target.type === "TENANT" ? "tenant" : "order"}<ArrowUpRight size={16} aria-hidden="true" /></button> : <small>Record link unavailable</small>}
                   <button className="notification-text-action" type="button" disabled={pending} onClick={() => update(item)} aria-label={`Mark ${item.title} ${item.readAt ? "unread" : "read"}`}>Mark {item.readAt ? "unread" : "read"}</button>
                 </div>
               </div>
@@ -187,9 +190,9 @@ export function NotificationInbox({ area, tenantId, merchantId, items }) {
           })}</ol>}
       </div>
       <footer className="notification-footer"><span role="status" className="sr-only">{announcement}</span>
-        <span>{pending ? "Saving…" : result?.total ? `${(page - 1) * 10 + 1}–${Math.min(page * 10, result.total)} of ${result.total}` : "10 updates per page"}</span>
+        <span>{pending ? _uiText("Saving…") : result?.total ? `${(page - 1) * 10 + 1}–${Math.min(page * 10, result.total)} of ${result.total}` : "10 updates per page"}</span>
         <nav aria-label="Notification pages"><button className="icon-button" type="button" aria-label="Previous notifications page" disabled={pending || loading || page <= 1} onClick={() => setPage(n => n - 1)}><ChevronLeft size={18} aria-hidden="true" /></button>
-          <span>Page {page}{result ? ` of ${result.totalPages}` : ""}</span>
+          <span>{_uiText("Page")} {page}{result ? ` of ${result.totalPages}` : ""}</span>
           <button className="icon-button" type="button" aria-label="Next notifications page" disabled={pending || loading || !result || page >= result.totalPages} onClick={() => setPage(n => n + 1)}><ChevronRight size={18} aria-hidden="true" /></button></nav>
       </footer>
     </dialog> : null}

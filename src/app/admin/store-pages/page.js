@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { Eye, FileText, RefreshCcw, Save, Send, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -14,6 +15,8 @@ const date = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: 
 const when = (value) => { const parsed = new Date(value); return value && Number.isFinite(parsed.getTime()) ? date.format(parsed) : "Not published"; };
 
 function ContentEditor({ tenantId, store, pageKey, accessToken, canManage, canPublish, onDirty, onBusy }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [data, setData] = useState(null); const [draft, setDraft] = useState(empty);
   const [loading, setLoading] = useState(true); const [reload, setReload] = useState(0);
   const [busy, setBusy] = useState(""); const [error, setError] = useState(""); const [message, setMessage] = useState("");
@@ -71,10 +74,10 @@ function ContentEditor({ tenantId, store, pageKey, accessToken, canManage, canPu
     } finally { if (actionRef.current === controller) actionRef.current = null; if (!controller.signal.aborted) setBusy(""); }
   }
   if (loading) return <div className={styles.skeleton} role="status" aria-label="Loading store page"><i /><i /><i /></div>;
-  if (!data) return <div className={styles.error} role="alert"><p>{error || "Page unavailable."}</p><button type="button" className="button button-secondary" onClick={requestReload}>Try again</button></div>;
+  if (!data) return <div className={styles.error} role="alert"><p>{error || "Page unavailable."}</p><button type="button" className="button button-secondary" onClick={requestReload}>{_uiText("Try again")}</button></div>;
 
   return <>
-    <div className={styles.statusBar}><div><strong>{data.page.label}</strong><span>{data.published ? "Published" : "Not published"} · {dirty ? "Unsaved edits" : !data.revision ? "No saved draft" : data.hasUnpublishedChanges ? "Draft changes not live" : "Saved"}</span><small>Last published: {when(data.publishedAt)}{data.publishedAt ? " IST" : ""}</small></div>
+    <div className={styles.statusBar}><div><strong>{data.page.label}</strong><span>{data.published ? _uiText("Published") : "Not published"} · {dirty ? "Unsaved edits" : !data.revision ? "No saved draft" : data.hasUnpublishedChanges ? "Draft changes not live" : "Saved"}</span><small>Last published: {when(data.publishedAt)}{data.publishedAt ? " IST" : ""}</small></div>
       <button type="button" className="button button-secondary" disabled={Boolean(busy)} onClick={requestReload}><RefreshCcw size={16} aria-hidden="true" />Reload saved</button></div>
     {discardReload ? <div className={styles.warning} role="alert"><p>Discard your unsaved text and reload the saved version?</p><div className={styles.actions}><button type="button" className="button button-secondary" onClick={() => setDiscardReload(false)}>Keep editing</button><button type="button" className="button button-danger" onClick={() => { setDiscardReload(false); setReload((value) => value + 1); }}>Discard and reload</button></div></div> : null}
     {error ? <p className={styles.error} role="alert">{error}</p> : null}
@@ -89,12 +92,12 @@ function ContentEditor({ tenantId, store, pageKey, accessToken, canManage, canPu
           <label><span>Page content</span><textarea className={styles.bodyInput} value={draft.body} maxLength={30000} rows={14} readOnly={!canManage} disabled={Boolean(busy)} onChange={(event) => set("body", event.target.value)} aria-describedby="page-content-help" /></label>
           <p className={styles.helper} id="page-content-help">Plain text only. Use blank lines between paragraphs. HTML is displayed as text. {draft.body.length.toLocaleString("en-IN")} / 30,000 characters.</p>
           <div className={styles.actions}><button className="button button-secondary" type="button" disabled={Boolean(busy) || !draft.title.trim()} onClick={() => run("preview")}><Eye size={16} aria-hidden="true" />{busy === "preview" ? "Preparing preview…" : "Preview draft"}</button>
-            {canManage ? <button className="button button-primary" type="submit" disabled={Boolean(busy) || !draft.title.trim() || (!dirty && data.revision > 0)}><Save size={16} aria-hidden="true" />{busy === "save" ? "Saving…" : "Save draft"}</button> : null}</div>
+            {canManage ? <button className="button button-primary" type="submit" disabled={Boolean(busy) || !draft.title.trim() || (!dirty && data.revision > 0)}><Save size={16} aria-hidden="true" />{busy === "save" ? _uiText("Saving…") : "Save draft"}</button> : null}</div>
         </form>
       </section>
       <section className={`${styles.panel} ${styles.preview}`} aria-label="Content preview" ref={previewRef} tabIndex={-1}>
         <div className={styles.sectionHeading}><div><p className="eyebrow">Content preview</p><h2>{previewMode === "published" ? "Currently live" : "Draft preview"}</h2></div></div>
-        <div className={styles.actions}><button className="button button-secondary" type="button" aria-pressed={previewMode === "draft"} onClick={() => setPreviewMode("draft")}>Draft</button>{data.published ? <button className="button button-secondary" type="button" aria-pressed={previewMode === "published"} onClick={() => setPreviewMode("published")}>Published version</button> : null}</div>
+        <div className={styles.actions}><button className="button button-secondary" type="button" aria-pressed={previewMode === "draft"} onClick={() => setPreviewMode("draft")}>{_uiText("Draft")}</button>{data.published ? <button className="button button-secondary" type="button" aria-pressed={previewMode === "published"} onClick={() => setPreviewMode("published")}>Published version</button> : null}</div>
         {display ? <article className={styles.article}><h3>{display.title}</h3>{display.summary ? <p className={styles.intro}>{display.summary}</p> : null}<div>{(display.paragraphs || display.body.split(/\n\s*\n/).filter((part) => part.trim())).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div></article>
           : <p className={styles.empty}>Select Preview draft to review the content. Previews are private and do not publish anything.</p>}
         <p className={styles.helper}>Public address: <code>/pages/{data.page.slug}</code>. The storefront adds its own header and footer.</p>
@@ -112,6 +115,8 @@ function ContentEditor({ tenantId, store, pageKey, accessToken, canManage, canPu
 }
 
 function PagesWorkspace({ tenantId, accessToken, canManage, canPublish }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [query, setQuery] = useState(""); const [options, setOptions] = useState(null);
   const [searching, setSearching] = useState(true); const [error, setError] = useState(""); const [retry, setRetry] = useState(0);
   const [selection, setSelection] = useState({ store: null, pageKey: "ABOUT" });
@@ -132,11 +137,11 @@ function PagesWorkspace({ tenantId, accessToken, canManage, canPublish }) {
     <p className={styles.notice}><ShieldCheck size={21} aria-hidden="true" /><span>Information and policy pages start empty. Save drafts privately and publish only approved content. Each store has its own six pages.</span></p>
     <section className={styles.panel} aria-label="Choose store and page"><div className={styles.selectors}>
       <label><span>Find a store</span><input type="search" value={query} disabled={busy} maxLength={190} onChange={(event) => setQuery(event.target.value)} placeholder="Search store name or code" /></label>
-      <label><span>Store</span><select value={selection.store?.id || ""} disabled={busy || searching} onChange={(event) => { const store = options?.items.find((item) => item.id === event.target.value); if (store) choose({ ...selection, store }); }}>
+      <label><span>{_uiText("Store")}</span><select value={selection.store?.id || ""} disabled={busy || searching} onChange={(event) => { const store = options?.items.find((item) => item.id === event.target.value); if (store) choose({ ...selection, store }); }}>
         {!selection.store ? <option value="">{searching ? "Loading stores…" : "Choose a store"}</option> : !options?.items.some((store) => store.id === selection.store.id) ? <option value={selection.store.id}>{selection.store.name} · {selection.store.code}</option> : null}
         {options?.items.map((store) => <option key={store.id} value={store.id}>{store.name} · {store.code}{store.status !== "ACTIVE" ? " (inactive)" : ""}</option>)}
       </select></label>
-      <label><span>Page</span><select value={selection.pageKey} disabled={busy} onChange={(event) => choose({ ...selection, pageKey: event.target.value })}>{(options?.pages || [{ key: "ABOUT", label: "About us" }]).map((page) => <option value={page.key} key={page.key}>{page.label}</option>)}</select></label>
+      <label><span>{_uiText("Page")}</span><select value={selection.pageKey} disabled={busy} onChange={(event) => choose({ ...selection, pageKey: event.target.value })}>{(options?.pages || [{ key: "ABOUT", label: "About us" }]).map((page) => <option value={page.key} key={page.key}>{page.label}</option>)}</select></label>
     </div>{options?.hasMore ? <p className={styles.helper}>Showing the first 50 matches. Refine the store search to find another store.</p> : null}
       {selection.store?.status !== "ACTIVE" && selection.store ? <p className={styles.helper}>This store is inactive. Content can be prepared, but public pages remain unavailable until the store is active.</p> : null}
       {error ? <div className={styles.error} role="alert"><p>{error}</p><button className="button button-secondary" type="button" onClick={() => setRetry((value) => value + 1)}>Retry store search</button></div> : null}

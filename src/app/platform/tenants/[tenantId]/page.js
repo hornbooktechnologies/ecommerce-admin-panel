@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -26,6 +27,8 @@ function actionLabel(action) {
 }
 
 export default function TenantDetailPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { tenantId } = useParams();
   const { accessToken } = useAuth();
   const [tenant, setTenant] = useState(null);
@@ -83,7 +86,7 @@ export default function TenantDetailPage() {
 
   return (
     <AppShell
-      action={<div className="page-actions"><Link className="button button-secondary" href="/platform/tenants"><ArrowLeft size={16} aria-hidden="true" />Tenants</Link>{tenant ? <Link className="button button-secondary" href={`/platform/tenants/${tenant.id}/edit`}><Pencil size={15} aria-hidden="true" />Edit</Link> : null}{tenant ? actionButton : null}</div>}
+      action={<div className="page-actions"><Link className="button button-secondary" href="/platform/tenants"><ArrowLeft size={16} aria-hidden="true" />{_uiText("Tenants")}</Link>{tenant ? <Link className="button button-secondary" href={`/platform/tenants/${tenant.id}/edit`}><Pencil size={15} aria-hidden="true" />{_uiText("Edit")}</Link> : null}{tenant ? actionButton : null}</div>}
       area="platform"
       currentPath="/platform/tenants"
       description="Business identity, default operating structure, owner access, and lifecycle history."
@@ -91,7 +94,7 @@ export default function TenantDetailPage() {
       title={tenant?.displayName || "Tenant details"}
     >
       {loading ? <GlobalLoader inline label="Loading tenant workspace" /> : null}
-      {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={loadTenant} type="button">Try again</button></div> : null}
+      {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={loadTenant} type="button">{_uiText("Try again")}</button></div> : null}
 
       {tenant && !loading ? (
         <>
@@ -107,7 +110,7 @@ export default function TenantDetailPage() {
           <div className="tenant-detail-grid">
             <div className="tenant-detail-main">
               <section className="detail-section" aria-labelledby="stores-title">
-                <div className="detail-section-heading"><div><p className="eyebrow">Operating structure</p><h2 id="stores-title">Stores</h2></div><span>{tenant.stores.length} total</span></div>
+                <div className="detail-section-heading"><div><p className="eyebrow">Operating structure</p><h2 id="stores-title">{_uiText("Stores")}</h2></div><span>{tenant.stores.length} total</span></div>
                 <div className="structured-list">
                   {tenant.stores.map((store) => (
                     <article key={store.id}><span className="list-icon" data-tone="store"><Store size={18} aria-hidden="true" /></span><div><strong>{store.name}</strong><small>{store.code} · {store.baseCurrency} · {store.languageCode}</small></div><div className="list-meta"><Status tone="positive">{store.status}</Status><small>{store.channelCount} channel</small></div></article>
@@ -135,7 +138,7 @@ export default function TenantDetailPage() {
                 {tenant.owner ? <div className="owner-profile"><span><UserRound size={19} aria-hidden="true" /></span><div><strong>{tenant.owner.firstName} {tenant.owner.lastName}</strong><a href={`mailto:${tenant.owner.email}`}><Mail size={14} aria-hidden="true" />{tenant.owner.email}</a><small>{tenant.owner.membershipStatus} membership</small></div></div> : <p className="muted-copy">No owner is assigned.</p>}
               </section>
               <section className="activity-panel" aria-labelledby="activity-title">
-                <p className="eyebrow">Audit history</p><h2 id="activity-title">Recent activity</h2>
+                <p className="eyebrow">Audit history</p><h2 id="activity-title">{_uiText("Recent activity")}</h2>
                 {tenant.activity.length ? <ol>{tenant.activity.map((event) => <li key={event.id}><span aria-hidden="true" /><div><strong>{actionLabel(event.action)}</strong><p>{event.metadata?.reason || event.actor?.name || "Platform operation"}</p><time>{formatDate(event.occurredAt, true)}</time></div></li>)}</ol> : <p className="muted-copy">No activity recorded yet.</p>}
               </section>
             </aside>

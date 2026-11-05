@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -13,6 +14,8 @@ import { catalogVerticalOptions } from "@/lib/catalog-verticals";
 const verticalIcons = { GENERAL: Boxes, GROCERY: Weight, ELECTRONICS: Zap, CLOTHING: Tags };
 
 export default function EditTenantPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { tenantId } = useParams();
   const router = useRouter();
   const { accessToken } = useAuth();
@@ -108,7 +111,7 @@ export default function EditTenantPage() {
             {errors.catalogVerticals ? <small className="field-error tenant-vertical-error">{errors.catalogVerticals}</small> : null}
           </section>
           {message ? <div className="form-error" ref={errorRef} role="alert" tabIndex={-1}>{message}</div> : null}
-          <div className="form-footer"><Link className="button button-secondary" href={`/platform/tenants/${tenantId}`}>Cancel</Link><button className="button button-primary" disabled={saving} type="submit"><Save size={16} aria-hidden="true" />{saving ? "Saving…" : "Save changes"}</button></div>
+          <div className="form-footer"><Link className="button button-secondary" href={`/platform/tenants/${tenantId}`}>{_uiText("Cancel")}</Link><button className="button button-primary" disabled={saving} type="submit"><Save size={16} aria-hidden="true" />{saving ? _uiText("Saving…") : _uiText("Save changes")}</button></div>
         </form>
       )}
     </AppShell>

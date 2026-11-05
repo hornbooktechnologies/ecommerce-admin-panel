@@ -1,6 +1,14 @@
+import { rememberListingSource } from "./listing-export-source";
+export const getStoreLocalizationRequest=(storeId,accessToken,tenantId)=>request(`/api/admin/v1/stores/${storeId}/localization`,{accessToken,tenantId});
+export const saveStoreLocalizationRequest=(storeId,body,accessToken,tenantId)=>request(`/api/admin/v1/stores/${storeId}/localization`,{method:'PUT',body,accessToken,tenantId});
+export function sellerRatingsRequest(filters,accessToken,tenantId){return request(`/api/admin/v1/seller-ratings?${new URLSearchParams(filters)}`,{accessToken,tenantId});}
+export function moderateSellerRatingRequest(ratingId,input,accessToken,tenantId){return request(`/api/admin/v1/seller-ratings/${ratingId}/moderate`,{method:'POST',body:input,accessToken,tenantId});}
+
 const apiOrigin = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
 const apiBase = apiOrigin.replace(/\/$/, "");
 const authBase = "/api/admin/v1/auth";
+export const getCodCollectionRequest=(orderId,accessToken,tenantId)=>request(`/api/admin/v1/orders/${orderId}/cod-collection`,{accessToken,tenantId});
+export const recordCodCollectionRequest=(orderId,body,accessToken,tenantId)=>request(`/api/admin/v1/orders/${orderId}/cod-collection`,{method:'POST',body,accessToken,tenantId});
 const platformTenantBase = "/api/platform/v1/tenants";
 const platformAccessBase = "/api/platform/v1/access";
 export function questionsRequest(path,context={},area='admin') {
@@ -18,6 +26,8 @@ export function platformDashboardRequest(context) {
   return request("/api/platform/v1/dashboard", context);
 }
 
+export function homepageSectionScopesRequest(storeId,query,context){return request(`/api/admin/v1/stores/${storeId}/homepage-sections/scopes?${query}`,context);}
+export function reminderMonitorRequest(filters,context){return request(`/api/admin/v1/shopping-alerts/reminders?${new URLSearchParams(filters)}`,context);}
 export function homepageSectionsRequest(storeId, accessToken, tenantId) {
   return request(`/api/admin/v1/stores/${storeId}/homepage-sections`, { accessToken, tenantId });
 }
@@ -212,7 +222,15 @@ async function request(path, { method = "GET", body, accessToken, tenantId, merc
     });
   }
 
-  return payload?.data;
+  const data = payload?.data;
+  if (method === "GET" && data && typeof data === "object") {
+    rememberListingSource(data, (page, exportSignal) => {
+      const url = new URL(path, apiBase);
+      url.searchParams.set("page", String(page));
+      return request(`${url.pathname}${url.search}`, { accessToken, tenantId, merchantId, signal: exportSignal });
+    });
+  }
+  return data;
 }
 
 function inboxBase(area) {
@@ -1260,6 +1278,17 @@ export function notificationDeliveryHealthRequest(context) {
   return request("/api/platform/v1/notification-deliveries/health", context);
 }
 
+export function merchandisingStoresRequest(search,context){return request(`/api/admin/v1/merchandising-report/stores?${new URLSearchParams({search})}`,context);}
+export function merchandisingReportRequest(storeId,filters,context){return request(`/api/admin/v1/stores/${storeId}/merchandising-report?${new URLSearchParams(filters)}`,context);}
+
+export function storeCollectionsRequest(storeId,filters,context){return request(`/api/admin/v1/stores/${storeId}/collections?${new URLSearchParams(filters)}`,context);}
+export function collectionActionRequest(storeId,collectionId,action,body,context){const base=`/api/admin/v1/stores/${storeId}/collections`;return request(`${base}${collectionId?`/${collectionId}`:''}${['publish','withdraw','preview'].includes(action)?`/${action}`:''}`,{...context,method:action==='save'?'PUT':'POST',body});}
+
 export function notificationDeliveryHistoryRequest(eventId, pagination, context) {
   return request(`/api/platform/v1/notification-deliveries/${encodeURIComponent(eventId)}/history?${new URLSearchParams(pagination)}`, context);
 }
+
+export function shoppingAlertsRequest(filters,accessToken,tenantId){return request(`/api/admin/v1/shopping-alerts?${new URLSearchParams({status:filters.status,page:String(filters.page),pageSize:String(filters.pageSize)})}`,{accessToken,tenantId});}
+
+export const sellerPublicProfileRequest=(vendorId,storeId,accessToken,tenantId)=>request(`/api/admin/v1/vendors/${vendorId}/stores/${storeId}/public-profile`,{accessToken,tenantId});
+export const saveSellerPublicProfileRequest=(vendorId,storeId,body,accessToken,tenantId)=>request(`/api/admin/v1/vendors/${vendorId}/stores/${storeId}/public-profile`,{method:'PUT',body,accessToken,tenantId});

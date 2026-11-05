@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { BellRing, RefreshCw, RotateCcw, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -22,6 +23,8 @@ function formatDate(value) {
 }
 
 function Deliveries({ canRetry, canReadAudit }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken } = useAuth();
   const [filters, setFilters] = useState({ status: "FAILED", audience: "ALL", search: "", page: 1, pageSize: 10 });
   const [search, setSearch] = useState("");
@@ -87,7 +90,7 @@ function Deliveries({ canRetry, canReadAudit }) {
         <p className={styles.muted}>Inspect inbox delivery failures and safely queue a single retry.</p></div>
       <button ref={refreshRef} type="button" className="secondary-button" disabled={busy || loading}
         onClick={() => { dismiss(); setRevision((value) => value + 1); }}>
-        <RefreshCw size={17} aria-hidden="true" /> Refresh</button>
+        <RefreshCw size={17} aria-hidden="true" /> {_uiText("Refresh")}</button>
     </header>
 
     <aside className={styles.explainer}><ShieldCheck size={21} aria-hidden="true" /><div>
@@ -110,19 +113,19 @@ function Deliveries({ canRetry, canReadAudit }) {
       <form onSubmit={(event) => { event.preventDefault(); changeFilters({ search: search.trim() }); }}>
         <fieldset className={styles.filters} disabled={busy}>
           <label>Search tenant code or event type<input value={search} maxLength={80} onChange={(event) => setSearch(event.target.value)} placeholder="Tenant code or event type" /></label>
-          <label>Status<select value={filters.status} onChange={(event) => changeFilters({ status: event.target.value })}>
-            <option value="ALL">All statuses</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+          <label>{_uiText("Status")}<select value={filters.status} onChange={(event) => changeFilters({ status: event.target.value })}>
+            <option value="ALL">{_uiText("All statuses")}</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label>Audience<select value={filters.audience} onChange={(event) => changeFilters({ audience: event.target.value })}>
             <option value="ALL">All audiences</option><option value="ADMIN">Admin</option><option value="VENDOR">Vendor</option>
-            <option value="CUSTOMER">Customer</option><option value="PLATFORM">Platform</option></select></label>
-          <button type="submit" className="secondary-button">Search</button>
+            <option value="CUSTOMER">{_uiText("Customer")}</option><option value="PLATFORM">Platform</option></select></label>
+          <button type="submit" className="secondary-button">{_uiText("Search")}</button>
         </fieldset>
       </form>
 
       {selected && <form className={styles.confirmation} onSubmit={retry} aria-labelledby="retry-title">
         <h3 id="retry-title">Confirm delivery retry</h3>
         <p><strong>{selected.tenantCode}</strong> · {selected.kind}</p><code>{selected.id}</code>
-        <p>This queues manual cycle {selected.manualRetries + 1} of {data?.maxManualRetries || 3}. Fix the underlying delivery problem first.
+        <p>This queues manual cycle {selected.manualRetries + 1} {_uiText("of")} {data?.maxManualRetries || 3}. Fix the underlying delivery problem first.
           Existing recipients and progress will not be reset.</p>
         <label htmlFor="retry-reason">Reason for retry <span aria-hidden="true">*</span></label>
         <textarea ref={reasonRef} id="retry-reason" required minLength={10} maxLength={500} rows={3} disabled={busy}
@@ -131,7 +134,7 @@ function Deliveries({ canRetry, canReadAudit }) {
         <label className={styles.checkbox}><input type="checkbox" required checked={confirmed} disabled={busy}
           onChange={(event) => setConfirmed(event.target.checked)} />I confirm this should retry only the failed inbox delivery.</label>
         {retryError && <p className={styles.error} role="alert">{retryError}</p>}
-        <div className={styles.actions}><button type="button" className="secondary-button" disabled={busy} onClick={dismiss}>Cancel</button>
+        <div className={styles.actions}><button type="button" className="secondary-button" disabled={busy} onClick={dismiss}>{_uiText("Cancel")}</button>
           <button type="submit" className="primary-button" disabled={busy || !confirmed || reason.trim().length < 10}>
             <RotateCcw size={16} aria-hidden="true" />{busy ? "Queueing…" : "Queue retry"}</button></div>
       </form>}
@@ -163,7 +166,7 @@ function Deliveries({ canRetry, canReadAudit }) {
         </li>)}</ul>}
       </div>
       {data && <fieldset className={styles.pagination} disabled={busy || loading}>
-        <TablePagination itemLabel="deliveries" page={data.page} pageSize={data.pageSize} pageSizeOptions={[10, 20, 50]}
+        <TablePagination  itemLabel="deliveries" page={data.page} pageSize={data.pageSize} pageSizeOptions={[10, 20, 50]}
           total={data.total} totalPages={data.totalPages} onPageChange={(page) => changeFilters({ page })}
           onPageSizeChange={(pageSize) => changeFilters({ pageSize })} />
       </fieldset>}

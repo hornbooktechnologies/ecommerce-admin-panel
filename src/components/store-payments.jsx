@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useState } from "react";
 import { CreditCard } from "lucide-react";
 import { paymentSettingsRequest, savePaymentSettingsRequest } from "@/lib/api-client";
@@ -15,6 +16,8 @@ export function StorePayments({ storeId, storeName, tenantId, accessToken, Frame
   </section>;
 }
 function PaymentDialog({ storeId, tenantId, accessToken, Frame, onClose, onSaved }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [config, setConfig] = useState(null), [error, setError] = useState(""), [saving, setSaving] = useState(false);
   const [keyId, setKeyId] = useState(""), [keySecret, setKeySecret] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
@@ -35,7 +38,7 @@ function PaymentDialog({ storeId, tenantId, accessToken, Frame, onClose, onSaved
       {error && <p className="inline-state inline-state-error" role="alert">{error}</p>}
       {!config ? !error && <p role="status">Loading payment settings…</p> : <fieldset disabled={saving} style={{ border: 0, padding: 0, minWidth: 0 }}>
         <div className="store-form-section"><h3>Methods for this store</h3>
-          <label className="store-check"><input type="checkbox" checked={config.codEnabled} onChange={(event) => setConfig({ ...config, codEnabled: event.target.checked })} /><span><strong>Cash on delivery</strong><small>Payment remains unpaid until collected; no online charge.</small></span></label>
+          <label className="store-check"><input type="checkbox" checked={config.codEnabled} onChange={(event) => setConfig({ ...config, codEnabled: event.target.checked })} /><span><strong>{_uiText("Cash on delivery")}</strong><small>Payment remains unpaid until collected; no online charge.</small></span></label>
           <label className="store-check"><input type="checkbox" checked={config.onlineEnabled} disabled={!config.encryptionReady} onChange={(event) => setConfig({ ...config, onlineEnabled: event.target.checked })} /><span><strong>Online payment — Razorpay Test Mode</strong><small>Connect a test account below before enabling. Variable-weight orders currently use COD.</small></span></label>
           {!config.codEnabled && !config.onlineEnabled && <p role="status">Both methods are off. Customers will not be able to place new orders.</p>}
         </div>
@@ -59,6 +62,6 @@ function PaymentDialog({ storeId, tenantId, accessToken, Frame, onClose, onSaved
           <p>Subscribe to <code>payment.authorized</code>, <code>payment.captured</code>, <code>payment.failed</code> and <code>order.paid</code>. Failed payments remain retryable; only verified captures mark orders paid.</p>
         </div>
       </fieldset>}
-    </div><footer className="dialog-actions catalog-dialog-actions"><span>Only tenant owners can change payment accounts.</span><div><button className="button button-secondary" type="button" disabled={saving} onClick={onClose}>Cancel</button><button className="button button-success" type="submit" disabled={!config || saving}>{saving ? "Validating & saving…" : "Save payment settings"}</button></div></footer></form>
+    </div><footer className="dialog-actions catalog-dialog-actions"><span>Only tenant owners can change payment accounts.</span><div><button className="button button-secondary" type="button" disabled={saving} onClick={onClose}>{_uiText("Cancel")}</button><button className="button button-success" type="submit" disabled={!config || saving}>{saving ? "Validating & saving…" : "Save payment settings"}</button></div></footer></form>
   </Frame>;
 }

@@ -85,7 +85,7 @@ export function DeliveryRetryHistory({ eventId, paused }) {
                 {entry.requestId && <div><dt>Request reference</dt><dd><code>{entry.requestId}</code></dd></div>}</dl>
             </li>)}</ol>}
           <fieldset className={styles.pagination} disabled={paused || loading}>
-            <TablePagination itemLabel="retry records" page={data.page} pageSize={data.pageSize} total={data.total} totalPages={data.totalPages}
+            <TablePagination  itemLabel="retry records" page={data.page} pageSize={data.pageSize} total={data.total} totalPages={data.totalPages}
               pageSizeOptions={[10, 20, 50]} onPageChange={(page) => setPagination((current) => ({ ...current, page }))}
               onPageSizeChange={(pageSize) => setPagination({ page: 1, pageSize })} />
           </fieldset>

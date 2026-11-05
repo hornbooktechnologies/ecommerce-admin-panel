@@ -1,5 +1,7 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -33,6 +35,7 @@ import { useAuth } from "@/components/auth-provider";
 import { Status } from "@/components/dashboard-primitives";
 import { GlobalLoader } from "@/components/global-loader";
 import { TablePagination } from "@/components/table-pagination";
+import SellerPublicProfile from "@/components/seller-public-profile";
 import { VendorDocumentsPanel } from "@/components/vendor-documents-panel";
 import { canUser, tenantIdForUser } from "@/lib/auth-routing";
 import {
@@ -133,6 +136,8 @@ function CreateVendorDialog({
   options,
   tenantId,
 }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [form, setForm] = useState({
     merchantCode: "",
     displayName: "",
@@ -343,14 +348,14 @@ function CreateVendorDialog({
               <header>
                 <span>02</span>
                 <div>
-                  <strong>Operations</strong>
+                  <strong>{_uiText("Operations")}</strong>
                   <small>Contacts, commercial defaults, and stores</small>
                 </div>
               </header>
               <div className="form-grid vendor-form-grid">
                 <label className="form-field">
                   <span>
-                    Support email <em>*</em>
+                    {_uiText("Support email")} <em>*</em>
                   </span>
                   <input
                     required
@@ -363,7 +368,7 @@ function CreateVendorDialog({
                 </label>
                 <label className="form-field">
                   <span>
-                    Support phone <em>*</em>
+                    {_uiText("Support phone")} <em>*</em>
                   </span>
                   <input
                     required
@@ -423,7 +428,7 @@ function CreateVendorDialog({
               <div className="form-grid vendor-form-grid">
                 <label className="form-field vendor-span-2">
                   <span>
-                    Address line 1 <em>*</em>
+                    {_uiText("Address line 1")} <em>*</em>
                   </span>
                   <input
                     required
@@ -434,7 +439,7 @@ function CreateVendorDialog({
                   />
                 </label>
                 <label className="form-field vendor-span-2">
-                  <span>Address line 2</span>
+                  <span>{_uiText("Address line 2")}</span>
                   <input
                     value={form.address.line2}
                     onChange={(event) =>
@@ -444,7 +449,7 @@ function CreateVendorDialog({
                 </label>
                 <label className="form-field">
                   <span>
-                    City <em>*</em>
+                    {_uiText("City")} <em>*</em>
                   </span>
                   <input
                     required
@@ -494,7 +499,7 @@ function CreateVendorDialog({
                 </label>
                 <label className="form-field">
                   <span>
-                    PIN code <em>*</em>
+                    {_uiText("PIN code")} <em>*</em>
                   </span>
                   <input
                     inputMode="numeric"
@@ -532,8 +537,7 @@ function CreateVendorDialog({
                 onClick={onClose}
                 type="button"
               >
-                Cancel
-              </button>
+                {_uiText("Cancel")} </button>
               <button
                 className="button button-primary"
                 disabled={saving || !form.storeIds.length}
@@ -550,6 +554,8 @@ function CreateVendorDialog({
 }
 
 function OfferEditor({ draft, onCancel, onSave, saving }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [form, setForm] = useState({
     listPrice: String(draft.listPrice || ""),
     salePrice: String(draft.salePrice || ""),
@@ -643,8 +649,7 @@ function OfferEditor({ draft, onCancel, onSave, saving }) {
           onClick={onCancel}
           type="button"
         >
-          Cancel
-        </button>
+          {_uiText("Cancel")} </button>
         <button
           className="button button-success"
           disabled={saving}
@@ -665,6 +670,8 @@ function temporaryPassword() {
 }
 
 function VendorAccessPanel({ accessToken, onClose, tenantId, vendor }) {
+ const {t: _uiText}=useUiLocalization();
+
   const contactParts = vendor.contactPerson.trim().split(/\s+/);
   const [form, setForm] = useState({
     email: vendor.supportEmail || "",
@@ -749,7 +756,7 @@ function VendorAccessPanel({ accessToken, onClose, tenantId, vendor }) {
             </p>
             <dl>
               <div>
-                <dt>Email</dt>
+                <dt>{_uiText("Email")}</dt>
                 <dd>{created.email}</dd>
               </div>
               <div>
@@ -775,7 +782,7 @@ function VendorAccessPanel({ accessToken, onClose, tenantId, vendor }) {
         <form onSubmit={submit}>
           <div className="vendor-access-form-grid">
             <label className="form-field">
-              <span>First name <em>*</em></span>
+              <span>{_uiText("First name")} <em>*</em></span>
               <input
                 autoFocus
                 required
@@ -786,7 +793,7 @@ function VendorAccessPanel({ accessToken, onClose, tenantId, vendor }) {
               />
             </label>
             <label className="form-field">
-              <span>Last name</span>
+              <span>{_uiText("Last name")}</span>
               <input
                 value={form.lastName}
                 onChange={(event) =>
@@ -795,7 +802,7 @@ function VendorAccessPanel({ accessToken, onClose, tenantId, vendor }) {
               />
             </label>
             <label className="form-field vendor-access-span-2">
-              <span>Email <em>*</em></span>
+              <span>{_uiText("Email")} <em>*</em></span>
               <input
                 autoComplete="email"
                 required
@@ -884,6 +891,8 @@ function VendorDetailDialog({
   tenantId,
   vendorId,
 }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -1205,7 +1214,7 @@ function VendorDetailDialog({
                   >
                     <span>
                       <Tags size={17} aria-hidden="true" />
-                      <small>Products</small>
+                      <small>{_uiText("Products")}</small>
                       <strong>{vendor.productCount}</strong>
                     </span>
                     <span>
@@ -1215,12 +1224,12 @@ function VendorDetailDialog({
                     </span>
                     <span>
                       <BadgeIndianRupee size={17} aria-hidden="true" />
-                      <small>Gross sales</small>
+                      <small>{_uiText("Gross sales")}</small>
                       <strong>{money(vendor.grossSales)}</strong>
                     </span>
                     <span>
                       <Store size={17} aria-hidden="true" />
-                      <small>Available units</small>
+                      <small>{_uiText("Available units")}</small>
                       <strong>
                         {vendor.availableUnits.toLocaleString("en-IN")}
                       </strong>
@@ -1275,7 +1284,7 @@ function VendorDetailDialog({
                           />
                         </label>
                         <label className="form-field">
-                          <span>Email</span>
+                          <span>{_uiText("Email")}</span>
                           <input
                             required
                             type="email"
@@ -1289,7 +1298,7 @@ function VendorDetailDialog({
                           />
                         </label>
                         <label className="form-field">
-                          <span>Phone</span>
+                          <span>{_uiText("Phone")}</span>
                           <input
                             required
                             type="tel"
@@ -1395,6 +1404,7 @@ function VendorDetailDialog({
                   <VendorDocumentsPanel accessToken={accessToken} canManage={canManage}
                     documents={details.documents || []} onChange={(result) => { setDetails(result); onSaved(); }}
                     tenantId={tenantId} vendorId={vendorId} />
+                  <SellerPublicProfile key={vendorId} {...{vendorId,accessToken,tenantId,canManage}} stores={details.stores||[]}/>
                   <section className="vendor-catalog-section">
                     <header>
                       <div>
@@ -1418,7 +1428,7 @@ function VendorDetailDialog({
                           </span>
                         </div>
                         <label>
-                          <span>Store</span>
+                          <span>{_uiText("Store")}</span>
                           <select
                             required
                             value={newOffer.storeId}
@@ -1556,11 +1566,11 @@ function VendorDetailDialog({
                               </small>
                             </div>
                             <span>
-                              <small>Store</small>
+                              <small>{_uiText("Store")}</small>
                               <strong>{offer.storeName}</strong>
                             </span>
                             <span>
-                              <small>Price</small>
+                              <small>{_uiText("Price")}</small>
                               <strong>{money(offer.salePrice)}</strong>
                               <del>
                                 {offer.listPrice > offer.salePrice
@@ -1583,7 +1593,7 @@ function VendorDetailDialog({
                                   : "warning"
                               }
                             >
-                              {offer.status === "ACTIVE" ? "Active" : "Paused"}
+                              {offer.status === "ACTIVE" ? _uiText("Active") : "Paused"}
                             </Status>
                             {canManage ? (
                               <div className="vendor-offer-actions">
@@ -1657,8 +1667,7 @@ function VendorDetailDialog({
                 onClick={onClose}
                 type="button"
               >
-                Close
-              </button>
+                {_uiText("Close")} </button>
             </footer>
           </>
         )}
@@ -1668,6 +1677,8 @@ function VendorDetailDialog({
 }
 
 export default function VendorsPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const canManage = canUser(user, "admin", "vendor.manage", tenantId);
@@ -1716,7 +1727,7 @@ export default function VendorsPage() {
       area="admin"
       currentPath="/admin/vendors"
       eyebrow="Marketplace operations"
-      title="Vendors"
+      title={_uiText("Vendors")}
       description="Onboard sellers, control store access, and manage their catalog offers and INR pricing."
       action={
         canManage ? (
@@ -1747,7 +1758,7 @@ export default function VendorsPage() {
             <Clock3 size={18} aria-hidden="true" />
           </span>
           <div>
-            <small>Awaiting approval</small>
+            <small>{_uiText("Awaiting approval")}</small>
             <strong>{summary.pending}</strong>
           </div>
         </article>
@@ -1765,7 +1776,7 @@ export default function VendorsPage() {
             <Ban size={18} aria-hidden="true" />
           </span>
           <div>
-            <small>Suspended</small>
+            <small>{_uiText("Suspended")}</small>
             <strong>{summary.suspended}</strong>
           </div>
         </article>
@@ -1811,22 +1822,20 @@ export default function VendorsPage() {
                 }))
               }
             >
-              <option value="ALL">All statuses</option>
+              <option value="ALL">{_uiText("All statuses")}</option>
               <option value="PENDING">Pending review</option>
-              <option value="ACTIVE">Active</option>
-              <option value="SUSPENDED">Suspended</option>
+              <option value="ACTIVE">{_uiText("Active")}</option>
+              <option value="SUSPENDED">{_uiText("Suspended")}</option>
             </select>
             <button className="button button-secondary" type="submit">
-              Search
-            </button>
+              {_uiText("Search")} </button>
           </form>
         </div>
         {error ? (
           <div className="inline-state inline-state-error" role="alert">
             <span>{error}</span>
             <button onClick={load} type="button">
-              Try again
-            </button>
+              {_uiText("Try again")} </button>
           </div>
         ) : null}
         {loading ? (
@@ -1851,13 +1860,13 @@ export default function VendorsPage() {
             ) : null}
           </div>
         ) : (
-          <>
+          <><ListingExcelExport data={result} title={_uiText("vendors")} disabled={loading}/>
             <div className="vendor-row-head" aria-hidden="true">
               <span>Vendor</span>
-              <span>Stores</span>
-              <span>Catalog</span>
-              <span>Gross sales</span>
-              <span>Status</span>
+              <span>{_uiText("Stores")}</span>
+              <span>{_uiText("Catalog")}</span>
+              <span>{_uiText("Gross sales")}</span>
+              <span>{_uiText("Status")}</span>
               <span />
             </div>
             <div className="vendor-row-list">
@@ -1878,16 +1887,16 @@ export default function VendorsPage() {
                     </span>
                   </span>
                   <span>
-                    <small>Stores</small>
+                    <small>{_uiText("Stores")}</small>
                     <strong>{vendor.storeCount}</strong>
                   </span>
                   <span>
-                    <small>Catalog</small>
+                    <small>{_uiText("Catalog")}</small>
                     <strong>{vendor.activeOfferCount} active</strong>
-                    <small>{vendor.productCount} products</small>
+                    <small>{vendor.productCount} {_uiText("products")}</small>
                   </span>
                   <span>
-                    <small>Gross sales</small>
+                    <small>{_uiText("Gross sales")}</small>
                     <strong>{money(vendor.grossSales)}</strong>
                   </span>
                   <span>
@@ -1900,8 +1909,8 @@ export default function VendorsPage() {
                 </button>
               ))}
             </div>
-            <TablePagination
-              itemLabel="vendors"
+            <TablePagination 
+              itemLabel={_uiText("vendors")}
               onPageChange={(page) =>
                 setFilters((current) => ({ ...current, page }))
               }

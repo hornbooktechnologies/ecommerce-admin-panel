@@ -1,8 +1,11 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 import { useCallback, useEffect, useState } from "react";
 import { Pencil, Plus, Ruler, Eye } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { CatalogTabs } from "@/components/catalog-tabs";
+import { SizeGuideDefaultsPanel } from '@/components/size-guide-defaults-panel';
 import { GlobalLoader } from "@/components/global-loader";
 import { TablePagination } from "@/components/table-pagination";
 import { Status } from "@/components/dashboard-primitives";
@@ -12,6 +15,8 @@ import { canUser, tenantIdForUser } from "@/lib/auth-routing";
 import { sizeGuidesRequest } from "@/lib/api-client";
 
 export default function SizeGuidesPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { user, accessToken, activeTenantId } = useAuth(),
     tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const canRead = canUser(user, "admin", "catalog.product.read", tenantId),
@@ -67,7 +72,7 @@ export default function SizeGuidesPage() {
       area="admin"
       currentPath="/admin/catalog/size-guides"
       eyebrow="Product confidence"
-      title="Size guides"
+      title={_uiText("Size guides")}
       description="Reusable measurement charts for clothing products. No generic measurements are assumed."
       action={
         canCreate ? (
@@ -83,6 +88,7 @@ export default function SizeGuidesPage() {
       }
     >
       <CatalogTabs currentPath="/admin/catalog/size-guides" />
+      <SizeGuideDefaultsPanel/>
       {notice && (
         <p role="status" className="inline-state">
           {notice}
@@ -127,13 +133,12 @@ export default function SizeGuidesPage() {
                 }))
               }
             >
-              <option value="ALL">All statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
+              <option value="ALL">{_uiText("All statuses")}</option>
+              <option value="ACTIVE">{_uiText("Active")}</option>
+              <option value="INACTIVE">{_uiText("Inactive")}</option>
             </select>
             <button className="button button-secondary" type="submit">
-              Search
-            </button>
+              {_uiText("Search")} </button>
           </form>
         </div>
         {!canRead ? (
@@ -142,8 +147,7 @@ export default function SizeGuidesPage() {
           <div className="inline-state inline-state-error" role="alert">
             {error}
             <button type="button" onClick={load}>
-              Retry
-            </button>
+              {_uiText("Retry")} </button>
           </div>
         ) : loading ? (
           <GlobalLoader inline label="Loading size guides" />
@@ -157,17 +161,17 @@ export default function SizeGuidesPage() {
             </p>
           </div>
         ) : (
-          <>
+          <><ListingExcelExport data={data} title="size guides" disabled={loading}/>
             <div className="table-wrap">
               <table className="tenant-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>{_uiText("Name")}</th>
                     <th>Unit</th>
                     <th>Measurements</th>
-                    <th>Assigned products</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Product overrides</th>
+                    <th>{_uiText("Status")}</th>
+                    <th>{_uiText("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -189,7 +193,7 @@ export default function SizeGuidesPage() {
                             item.status === "ACTIVE" ? "positive" : "neutral"
                           }
                         >
-                          {item.status === "ACTIVE" ? "Active" : "Inactive"}
+                          {item.status === "ACTIVE" ? _uiText("Active") : _uiText("Inactive")}
                         </Status>
                       </td>
                       <td data-label="Actions">
@@ -203,7 +207,7 @@ export default function SizeGuidesPage() {
                           ) : (
                             <Eye aria-hidden="true" size={14} />
                           )}{" "}
-                          {canUpdate ? "Edit" : "View"}
+                          {canUpdate ? _uiText("Edit") : _uiText("View")}
                         </button>
                       </td>
                     </tr>
@@ -211,7 +215,7 @@ export default function SizeGuidesPage() {
                 </tbody>
               </table>
             </div>
-            <TablePagination
+            <TablePagination 
               itemLabel="size guides"
               page={data.page}
               pageSize={data.pageSize}

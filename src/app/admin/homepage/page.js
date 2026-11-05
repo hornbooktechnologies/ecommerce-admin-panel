@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowRight, ImagePlus, Plus, Save, Send, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -9,8 +10,12 @@ import { homepageHeroRequest, homepageHeroProductsRequest, listStoresRequest,
   saveHomepageHeroRequest, publishHomepageHeroRequest, uploadHomepageHeroImageRequest } from "@/lib/api-client";
 import styles from "./page.module.css";
 import { SectionsEditor } from "./sections-editor";
+import {CollectionsEditor} from './collections-editor';
+import {CollectionPicker} from './collection-picker';
 
 function SlideEditor({ slide, storeId, accessToken, tenantId, onChange, disabled, onUploading }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -67,7 +72,7 @@ function SlideEditor({ slide, storeId, accessToken, tenantId, onChange, disabled
         <label className="form-field"><span>Slide palette</span><select value={slide.tone} onChange={(event) => set("tone", event.target.value)}><option value="sage">Sage</option><option value="rose">Rose</option><option value="sand">Sand</option></select></label>
       </div>
       <label className="form-field"><span>Headline{!slide.productSlug && " *"}</span><input value={slide.title} maxLength={120} onChange={(event) => set("title", event.target.value)} placeholder={linked?.name || "Your campaign headline"} /></label>
-      <label className="form-field"><span>Description</span><textarea rows={3} value={slide.description} maxLength={300} onChange={(event) => set("description", event.target.value)} placeholder="A short introduction to the collection" /></label>
+      <label className="form-field"><span>{_uiText("Description")}</span><textarea rows={3} value={slide.description} maxLength={300} onChange={(event) => set("description", event.target.value)} placeholder="A short introduction to the collection" /></label>
       <div className={styles.upload}>
         <ImagePlus size={24} aria-hidden="true" /><div><strong>Campaign image</strong><p>Recommended: 1400 × 1200 px. Keep important details near the centre.</p><small>JPEG, PNG, WebP or AVIF · Maximum 8 MB</small></div>
         <label className={`button button-secondary ${styles.uploadButton}`}>
@@ -79,8 +84,9 @@ function SlideEditor({ slide, storeId, accessToken, tenantId, onChange, disabled
       <label className="form-field"><span>Image description{slide.imageUrl && " *"}</span><input value={slide.altText} maxLength={180} onChange={(event) => set("altText", event.target.value)} placeholder="Describe the visible product or campaign" /></label>
       <div className={styles.twoColumns}>
         <label className="form-field"><span>Button label *</span><input value={slide.ctaLabel} maxLength={40} onChange={(event) => set("ctaLabel", event.target.value)} /></label>
-        <label className="form-field"><span>Button destination *</span><input value={slide.productSlug ? `/p/${slide.productSlug}` : slide.href} disabled={Boolean(slide.productSlug)} onChange={(event) => set("href", event.target.value)} placeholder="/ or /c/category-slug" /><small>{slide.productSlug ? "Automatically linked to the selected product." : "Use / for homepage or /c/category-slug for a category."}</small></label>
+        <label className="form-field"><span>Button destination *</span><input value={slide.productSlug ? `/p/${slide.productSlug}` : slide.href} disabled={Boolean(slide.productSlug)} maxLength={325} onChange={(event) => set("href", event.target.value)} placeholder="/collections/festive-edit" /><small>{slide.productSlug ? "Automatically linked to the selected product." : "Use /, /products, /collections/collection-slug or /c/category-slug."}</small></label>
       </div>
+      {!slide.productSlug&&<CollectionPicker storeId={storeId} context={{accessToken,tenantId}} value={slide.href.startsWith('/collections/')?slide.href:''} byHref onChange={value=>set('href',value||'/')}/>}
       <label className={styles.check}><input type="checkbox" checked={slide.showPrice} disabled={!slide.productSlug} onChange={(event) => set("showPrice", event.target.checked)} />Show live product price and discount</label>
     </fieldset>
     <div className={styles.previewTitle}><strong>Slide preview</strong><small>Illustrative preview · not published</small></div>
@@ -94,6 +100,8 @@ function SlideEditor({ slide, storeId, accessToken, tenantId, onChange, disabled
 }
 
 function HeroWorkspace({ accessToken, tenantId, canRead, canManage }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [stores, setStores] = useState([]);
   const [storeId, setStoreId] = useState("");
   const [record, setRecord] = useState(null);
@@ -167,14 +175,14 @@ function HeroWorkspace({ accessToken, tenantId, canRead, canManage }) {
   const selected = draft?.slides.find((slide) => slide.id === selectedId);
   return <div className={styles.workspace}>
     <section className={styles.toolbar}>
-      <label className="form-field"><span>Store</span><select aria-label="Store" value={storeId} disabled={busy} onChange={(event) => {
+      <label className="form-field"><span>{_uiText("Store")}</span><select aria-label={_uiText("Store")} value={storeId} disabled={busy} onChange={(event) => {
         if (!dirty || window.confirm("Discard your unsaved hero changes and switch stores?")) setStoreId(event.target.value);
       }}>
         <option value="" disabled>Select a store</option>
         {storeId && !stores.some((store) => store.id === storeId) && <option value={storeId}>Selected store</option>}
         {stores.map((store) => <option key={store.id} value={store.id}>{store.name} · {store.code}</option>)}
       </select></label>
-      <form className={styles.storeSearch} onSubmit={(event) => { event.preventDefault(); setStoreSearch(searchDraft); }}><label className="form-field"><span>Find store</span><input value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} maxLength={120} placeholder="Store name or code" /></label><button className="button button-secondary">Search</button></form>
+      <form className={styles.storeSearch} onSubmit={(event) => { event.preventDefault(); setStoreSearch(searchDraft); }}><label className="form-field"><span>Find store</span><input value={searchDraft} onChange={(event) => setSearchDraft(event.target.value)} maxLength={120} placeholder="Store name or code" /></label><button className="button button-secondary">{_uiText("Search")}</button></form>
       <div className={styles.status}><strong>{record?.published ? "Published hero" : "Automatic product hero"}</strong><small>{dirty ? "Unsaved draft changes" : record?.revision ? "Draft saved" : "Create your first draft"}</small></div>
     </section>
     {error && <div className="inline-state inline-state-error" role="alert" tabIndex={-1} ref={errorRef}><span>{error}</span><button type="button" disabled={busy} onClick={() => { if (!dirty || window.confirm("Discard unsaved changes and reload?")) setAttempt((value) => value + 1); }}>Reload</button></div>}
@@ -215,18 +223,20 @@ export default function HomepagePage() {
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [tab, setTab] = useState("hero");
-  const [sectionsVisited, setSectionsVisited] = useState(false);
-  function selectTab(key) { setTab(key); if (key === "sections") setSectionsVisited(true); }
+  const [visited,setVisited]=useState({hero:true});
+  const tabs=[["hero","Hero slides"],["sections","Homepage sections"],["collections","Collection pages"]];
+  function selectTab(key) { setTab(key);setVisited(value=>({...value,[key]:true})); }
   return <AppShell area="admin" currentPath="/admin/homepage" eyebrow="Storefront content" title="Homepage management" description="Curate your storefront. Build, preview and publish store-specific content.">
-    <div role="tablist" aria-label="Homepage editor" className={styles.tabs}>{[["hero", "Hero slides"], ["sections", "Homepage sections"]].map(([key, label]) => <button type="button" role="tab" id={`homepage-tab-${key}`} key={key} tabIndex={tab === key ? 0 : -1} aria-selected={tab === key} aria-controls={`homepage-panel-${key}`} onClick={() => selectTab(key)} onKeyDown={(event) => {
+    <div role="tablist" aria-label="Homepage editor" className={styles.tabs}>{tabs.map(([key, label]) => <button type="button" role="tab" id={`homepage-tab-${key}`} key={key} tabIndex={tab === key ? 0 : -1} aria-selected={tab === key} aria-controls={`homepage-panel-${key}`} onClick={() => selectTab(key)} onKeyDown={(event) => {
       if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
-        event.preventDefault(); const next = event.key === "Home" ? "hero" : event.key === "End" ? "sections" : key === "hero" ? "sections" : "hero";
+        event.preventDefault(); const index=tabs.findIndex(item=>item[0]===key);const next=event.key==='Home'?tabs[0][0]:event.key==='End'?tabs[tabs.length-1][0]:tabs[(index+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length][0];
         selectTab(next); document.getElementById(`homepage-tab-${next}`)?.focus();
       }
     }}>{label}</button>)}</div>
     {accessToken && tenantId && <><div role="tabpanel" id="homepage-panel-hero" aria-labelledby="homepage-tab-hero" hidden={tab !== "hero"}><HeroWorkspace key={tenantId} accessToken={accessToken} tenantId={tenantId}
       canRead={canUser(user, "admin", "settings.store.read", tenantId)} canManage={canUser(user, "admin", "settings.store.manage", tenantId)} /></div>
-      <div role="tabpanel" id="homepage-panel-sections" aria-labelledby="homepage-tab-sections" hidden={tab !== "sections"}>{sectionsVisited && <SectionsEditor key={tenantId} accessToken={accessToken} tenantId={tenantId}
-        canRead={canUser(user, "admin", "settings.store.read", tenantId)} canManage={canUser(user, "admin", "settings.store.manage", tenantId)} />}</div></>}
+      <div role="tabpanel" id="homepage-panel-sections" aria-labelledby="homepage-tab-sections" hidden={tab !== "sections"}>{visited.sections && <SectionsEditor key={tenantId} accessToken={accessToken} tenantId={tenantId}
+        canRead={canUser(user, "admin", "settings.store.read", tenantId)} canManage={canUser(user, "admin", "settings.store.manage", tenantId)} />}</div>
+      <div role="tabpanel" id="homepage-panel-collections" aria-labelledby="homepage-tab-collections" hidden={tab !== "collections"}>{visited.collections&&<CollectionsEditor key={tenantId} accessToken={accessToken} tenantId={tenantId} canRead={canUser(user,'admin','settings.store.read',tenantId)} canManage={canUser(user,'admin','settings.store.manage',tenantId)}/>}</div></>}
   </AppShell>;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useMemo, useState } from "react";
 import { FileKey2, Pencil, Plus, ReceiptText, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
@@ -29,6 +30,8 @@ function errorMap(error) {
 }
 
 function SeriesDialog({ item, registrations, onClose, onSaved }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [form, setForm] = useState(() => ({
@@ -72,17 +75,19 @@ function SeriesDialog({ item, registrations, onClose, onSaved }) {
         <label className="form-field"><span>Prefix <em>*</em></span><input maxLength={20} pattern="[A-Za-z0-9][A-Za-z0-9/-]*" required value={form.prefix} onChange={(event) => set("prefix", event.target.value.toUpperCase())} />{errors.prefix ? <small className="field-error">{errors.prefix}</small> : null}</label>
         <label className="form-field"><span>Number padding <em>*</em></span><input max="12" min="3" required type="number" value={form.numberPadding} onChange={(event) => set("numberPadding", event.target.value)} /></label>
         <label className="form-field catalog-span-2"><span>Next sequence number <em>*</em></span><input min="1" required type="number" value={form.nextNumber} onChange={(event) => set("nextNumber", event.target.value)} /><small className="field-hint-text">Use the next unused number. Issued document numbers cannot be reused.</small></label>
-      </div>{error ? <div className="form-error" role="alert">{error}</div> : null}</div><footer className="dialog-actions"><button className="button button-secondary" disabled={saving} onClick={onClose} type="button">Cancel</button><button className="button button-success" disabled={saving} type="submit">{saving ? "Saving…" : item ? "Save series" : "Create series"}</button></footer></form>
+      </div>{error ? <div className="form-error" role="alert">{error}</div> : null}</div><footer className="dialog-actions"><button className="button button-secondary" disabled={saving} onClick={onClose} type="button">{_uiText("Cancel")}</button><button className="button button-success" disabled={saving} type="submit">{saving ? _uiText("Saving…") : item ? "Save series" : "Create series"}</button></footer></form>
     </section>
   </div>;
 }
 
 export function InvoiceSeriesPanel({ canManage, onSaved, registrations, series }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [dialog, setDialog] = useState(null);
   const activeRegistrations = registrations.filter((registration) => registration.status === "ACTIVE");
   function saved(data) { setDialog(null); onSaved(data); }
   return <section className="tax-series-section"><div className="section-heading"><div><p className="eyebrow">Controlled numbering</p><h2>Invoice series</h2></div>{canManage && activeRegistrations.length ? <button className="button button-secondary" onClick={() => setDialog({})} type="button"><Plus aria-hidden="true" size={16} />New series</button> : null}</div>
-    {series.length ? <div className="tax-series-list">{series.map((item) => <article key={item.id}><span className="tax-series-icon"><ReceiptText aria-hidden="true" size={18} /></span><span className="tax-series-identity"><small>{documentLabels[item.documentType] || item.documentType} · {item.financialYear}</small><strong>{item.prefix}</strong><em>{item.registrationName} · {item.registrationGstin}</em></span><span className="tax-series-next"><small>Next number</small><strong>{item.nextDocumentNumber}</strong><em>{item.documentCount} issued {item.documentCount === 1 ? "document" : "documents"}</em></span>{canManage ? <button aria-label={`Edit series ${item.prefix}`} className="row-text-action" onClick={() => setDialog({ item })} type="button"><Pencil aria-hidden="true" size={14} />Edit</button> : null}</article>)}</div> : <div className="empty-workspace"><FileKey2 aria-hidden="true" size={28} /><h3>No invoice series configured</h3><p>Create a financial-year series before issuing tax invoices or adjustment notes.</p>{canManage && activeRegistrations.length ? <button className="button button-secondary" onClick={() => setDialog({})} type="button"><Plus aria-hidden="true" size={16} />Create invoice series</button> : null}{!activeRegistrations.length ? <small>Add an active GST registration first.</small> : null}</div>}
+    {series.length ? <div className="tax-series-list">{series.map((item) => <article key={item.id}><span className="tax-series-icon"><ReceiptText aria-hidden="true" size={18} /></span><span className="tax-series-identity"><small>{documentLabels[item.documentType] || item.documentType} · {item.financialYear}</small><strong>{item.prefix}</strong><em>{item.registrationName} · {item.registrationGstin}</em></span><span className="tax-series-next"><small>Next number</small><strong>{item.nextDocumentNumber}</strong><em>{item.documentCount} issued {item.documentCount === 1 ? "document" : "documents"}</em></span>{canManage ? <button aria-label={`Edit series ${item.prefix}`} className="row-text-action" onClick={() => setDialog({ item })} type="button"><Pencil aria-hidden="true" size={14} />{_uiText("Edit")}</button> : null}</article>)}</div> : <div className="empty-workspace"><FileKey2 aria-hidden="true" size={28} /><h3>No invoice series configured</h3><p>Create a financial-year series before issuing tax invoices or adjustment notes.</p>{canManage && activeRegistrations.length ? <button className="button button-secondary" onClick={() => setDialog({})} type="button"><Plus aria-hidden="true" size={16} />Create invoice series</button> : null}{!activeRegistrations.length ? <small>Add an active GST registration first.</small> : null}</div>}
     {dialog ? <SeriesDialog item={dialog.item || null} onClose={() => setDialog(null)} onSaved={saved} registrations={activeRegistrations} /> : null}
   </section>;
 }

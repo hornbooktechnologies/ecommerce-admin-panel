@@ -1,0 +1,4 @@
+.pagination { flex-wrap: wrap; }
+.pagination > :last-child { flex-wrap: wrap; min-width: 0; }
+.pagination > :first-child { flex-shrink: 0; }
+@media (max-width: 820px) { .pagination > :last-child { width: 100%; } }

@@ -1,5 +1,7 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -20,6 +22,8 @@ function Skeleton() {
 }
 
 function OverviewData({ user, accessToken }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [data, setData] = useState(null), [error, setError] = useState("");
   const [loading, setLoading] = useState(true), [retry, setRetry] = useState(0);
   const tokenRef = useRef(accessToken); tokenRef.current = accessToken;
@@ -37,7 +41,7 @@ function OverviewData({ user, accessToken }) {
   if (!canRead) return <div className="inline-state" role="status">Your platform role does not include overview access. Use an authorised page from the sidebar or ask a super administrator for access.</div>;
   if (loading && !data) return <Skeleton />;
   return <div className={styles.content} aria-busy={loading}>
-    {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}{data ? " The previous snapshot is still shown below." : " No counts are shown until data loads."}</span><button type="button" disabled={loading} onClick={() => setRetry((value) => value + 1)}>Try again</button></div> : null}
+    {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}{data ? " The previous snapshot is still shown below." : " No counts are shown until data loads."}</span><button type="button" disabled={loading} onClick={() => setRetry((value) => value + 1)}>{_uiText("Try again")}</button></div> : null}
     {data ? <>
       <MetricStrip metrics={[
         { label: "Active tenants", value: number.format(data.summary.activeTenants), context: `${number.format(data.summary.totalTenants)} total · ${number.format(data.summary.suspendedTenants)} suspended`, tone: "positive" },
@@ -47,8 +51,8 @@ function OverviewData({ user, accessToken }) {
       ]} />
       <p className={styles.timestamp}>Snapshot: <time dateTime={data.generatedAt}>{when(data.generatedAt)}</time>. Customer accounts are not included in staff counts.</p>
       {data.canReadTenants ? <section className={`primary-work full-width-section ${styles.section}`} aria-labelledby="recent-tenant-heading">
-        <div className="section-heading"><div><p className="eyebrow">Tenant directory</p><h2 id="recent-tenant-heading">Recently updated tenants</h2><p className={styles.note}>Latest 10 tenant records, ordered by their last update—not browsing activity.</p></div><Link className="text-action" href="/platform/tenants">View all tenants</Link></div>
-        {data.recentTenants.length ? <div className={styles.tableWrap}><table className={styles.table}><caption className="sr-only">Most recently updated tenants</caption><thead><tr><th scope="col">Tenant</th><th scope="col">Stores</th><th scope="col">Active staff</th><th scope="col">Updated</th><th scope="col">Status</th></tr></thead><tbody>{data.recentTenants.map((tenant) => <tr key={tenant.id}><td><Link href={`/platform/tenants/${tenant.id}`}>{tenant.name}</Link></td><td>{number.format(tenant.stores)}</td><td>{number.format(tenant.staff)}</td><td><time dateTime={tenant.updatedAt || undefined}>{when(tenant.updatedAt)}</time></td><td><Status tone={tones[tenant.status] || "neutral"}>{tenant.status.toLowerCase()}</Status></td></tr>)}</tbody></table></div>
+        <div className="section-heading"><div><p className="eyebrow">Tenant directory</p><h2 id="recent-tenant-heading">Recently updated tenants</h2><ListingExcelExport data={data.recentTenants} title="recent tenants"/><p className={styles.note}>Latest 10 tenant records, ordered by their last update—not browsing activity.</p></div><Link className="text-action" href="/platform/tenants">View all tenants</Link></div>
+        {data.recentTenants.length ? <div className={styles.tableWrap}><table className={styles.table}><caption className="sr-only">Most recently updated tenants</caption><thead><tr><th scope="col">Tenant</th><th scope="col">{_uiText("Stores")}</th><th scope="col">Active staff</th><th scope="col">Updated</th><th scope="col">{_uiText("Status")}</th></tr></thead><tbody>{data.recentTenants.map((tenant) => <tr key={tenant.id}><td><Link href={`/platform/tenants/${tenant.id}`}>{tenant.name}</Link></td><td>{number.format(tenant.stores)}</td><td>{number.format(tenant.staff)}</td><td><time dateTime={tenant.updatedAt || undefined}>{when(tenant.updatedAt)}</time></td><td><Status tone={tones[tenant.status] || "neutral"}>{tenant.status.toLowerCase()}</Status></td></tr>)}</tbody></table></div>
           : <div className="empty-workspace"><h3>No tenants yet</h3><p>New businesses will appear here after a tenant is created.</p></div>}
       </section> : <p className="inline-state">Tenant-directory details require separate tenant-read permission.</p>}
     </> : null}

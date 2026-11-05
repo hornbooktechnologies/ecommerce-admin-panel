@@ -1,4 +1,6 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 
 import { useEffect, useRef, useState } from "react";
 import { Mail, RefreshCcw, Search, UserMinus } from "lucide-react";
@@ -17,6 +19,8 @@ const formatter = new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeSt
 function when(value) { const time = new Date(value); return value && Number.isFinite(time.getTime()) ? formatter.format(time) : "Not recorded"; }
 
 export default function NewsletterPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { user, accessToken, activeTenantId } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const canRead = canUser(user, "admin", "newsletter.read", tenantId);
@@ -76,16 +80,16 @@ export default function NewsletterPage() {
       {!canRead ? <p role="status">Your role does not have permission to view newsletter subscribers.</p> : <>
         <section className={styles.panel} aria-labelledby="newsletter-heading">
           <div className={styles.heading}><div><p className="eyebrow">Consent directory</p><h2 id="newsletter-heading">Subscribers</h2></div>
-            <button className="button button-secondary" type="button" disabled={saving || loading} onClick={() => { setSelected(null); setVersion((value) => value + 1); }}><RefreshCcw size={16} aria-hidden="true" />Refresh</button></div>
+            <button className="button button-secondary" type="button" disabled={saving || loading} onClick={() => { setSelected(null); setVersion((value) => value + 1); }}><RefreshCcw size={16} aria-hidden="true" />{_uiText("Refresh")}</button></div>
           <form className={styles.filters} onSubmit={(event) => { event.preventDefault(); setSelected(null); setFilters((value) => ({ ...value, search: search.trim(), page: 1 })); }}>
-            <label><span>Email address</span><input type="search" value={search} maxLength={254} placeholder="Search email address" onChange={(event) => setSearch(event.target.value)} disabled={saving} /></label>
-            <label><span>Store</span><select value={filters.storeId} disabled={saving} onChange={(event) => { setSelected(null); setFilters((value) => ({ ...value, storeId: event.target.value, page: 1 })); }}>
+            <label><span>{_uiText("Email address")}</span><input type="search" value={search} maxLength={254} placeholder="Search email address" onChange={(event) => setSearch(event.target.value)} disabled={saving} /></label>
+            <label><span>{_uiText("Store")}</span><select value={filters.storeId} disabled={saving} onChange={(event) => { setSelected(null); setFilters((value) => ({ ...value, storeId: event.target.value, page: 1 })); }}>
               <option value="">All stores</option>{(result?.key.startsWith(`${scopeKey}:`) ? result.data.stores : []).map((store) => <option key={store.id} value={store.id}>{store.name} · {store.code}</option>)}
             </select></label>
-            <label><span>Status</span><select value={filters.status} disabled={saving} onChange={(event) => { setSelected(null); setFilters((value) => ({ ...value, status: event.target.value, page: 1 })); }}>
-              <option value="ALL">All statuses</option>{Object.entries(labels).map(([status, label]) => <option key={status} value={status}>{label}</option>)}
+            <label><span>{_uiText("Status")}</span><select value={filters.status} disabled={saving} onChange={(event) => { setSelected(null); setFilters((value) => ({ ...value, status: event.target.value, page: 1 })); }}>
+              <option value="ALL">{_uiText("All statuses")}</option>{Object.entries(labels).map(([status, label]) => <option key={status} value={status}>{label}</option>)}
             </select></label>
-            <button className="button button-primary" type="submit" disabled={saving}><Search size={16} aria-hidden="true" />Search</button>
+            <button className="button button-primary" type="submit" disabled={saving}><Search size={16} aria-hidden="true" />{_uiText("Search")}</button>
           </form>
           {error ? <div className={styles.error} role="alert">{error}</div> : null}
           {message ? <p className={styles.success} role="status">{message}</p> : null}
@@ -93,13 +97,13 @@ export default function NewsletterPage() {
             <h3>Unsubscribe {selected.email}?</h3><p>This also cancels any pending confirmation. The email owner must confirm again to subscribe later.</p>
             <label><span>Reason (required)</span><input value={reason} minLength={3} maxLength={300} required disabled={saving} onChange={(event) => setReason(event.target.value)} placeholder="For example: requested by the recipient" /></label>
             <label className={styles.checkbox}><input type="checkbox" checked={confirmed} required disabled={saving} onChange={(event) => setConfirmed(event.target.checked)} /><span>I confirm this unsubscribe request.</span></label>
-            <div className={styles.actions}><button className="button button-secondary" type="button" disabled={saving} onClick={() => setSelected(null)}>Cancel</button><button className="button button-danger" type="submit" disabled={!confirmed || reason.trim().length < 3 || saving}>{saving ? "Unsubscribing…" : "Confirm unsubscribe"}</button></div>
+            <div className={styles.actions}><button className="button button-secondary" type="button" disabled={saving} onClick={() => setSelected(null)}>{_uiText("Cancel")}</button><button className="button button-danger" type="submit" disabled={!confirmed || reason.trim().length < 3 || saving}>{saving ? "Unsubscribing…" : "Confirm unsubscribe"}</button></div>
           </form> : null}
           {loading || (!visible && !error) ? <div className={styles.skeleton} role="status" aria-label="Loading subscribers">{[1, 2, 3, 4, 5].map((row) => <div key={row} />)}</div>
             : !visible ? <p role="status">Subscriber data is unavailable. Select Refresh to try again.</p>
               : !visible.items.length ? <div className={styles.empty}><Mail size={28} aria-hidden="true" /><h3>No matching subscribers</h3><p>New requests appear here after someone submits the storefront newsletter form.</p></div>
-                : <>
-                  <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Email & store</th><th>Status</th><th>Consent</th><th>Subscription history</th><th>Action</th></tr></thead><tbody>
+                : <><ListingExcelExport data={visible} title="subscribers" disabled={loading}/>
+                  <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Email & store</th><th>{_uiText("Status")}</th><th>Consent</th><th>Subscription history</th><th>Action</th></tr></thead><tbody>
                     {visible.items.map((item) => <tr key={item.id}>
                       <td data-label="Email & store"><strong>{item.email}</strong><small>{item.storeName} · {item.storeCode}</small></td>
                       <td data-label="Status"><Status tone={tones[item.status]}>{labels[item.status]}</Status>{item.status === "PENDING" && item.confirmationDelivery === "FAILED" ? <small className={styles.warning}>Confirmation email failed; the recipient can request a new link.</small> : null}</td>
@@ -108,7 +112,7 @@ export default function NewsletterPage() {
                       <td data-label="Action">{canManage && item.status !== "UNSUBSCRIBED" ? <button className="button button-danger" type="button" disabled={saving} onClick={() => review(item)}><UserMinus size={16} aria-hidden="true" />Unsubscribe</button> : <span>{item.status === "UNSUBSCRIBED" ? "No action needed" : "Read only"}</span>}</td>
                     </tr>)}
                   </tbody></table></div>
-                  <TablePagination itemLabel="subscribers" page={visible.page} pageSize={visible.pageSize} total={visible.total} totalPages={visible.totalPages}
+                  <TablePagination  itemLabel="subscribers" page={visible.page} pageSize={visible.pageSize} total={visible.total} totalPages={visible.totalPages}
                     onPageChange={(page) => { if (!saving) { setSelected(null); setFilters((value) => ({ ...value, page })); } }}
                     onPageSizeChange={(pageSize) => { if (!saving) { setSelected(null); setFilters((value) => ({ ...value, page: 1, pageSize })); } }} />
                 </>}

@@ -1,10 +1,12 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   ArchiveRestore,
+  Bell,
   BarChart3,
   BadgeCheck,
   Boxes,
@@ -51,6 +53,7 @@ import { NotificationInbox } from "@/components/notification-inbox";
 import { CommerceBackground } from "@/components/commerce-background";
 import { navigationForUser, merchantIdForUser } from "@/lib/auth-routing";
 import { groupNavigation } from "@/lib/inbox-navigation";
+import {LocalizationControls,useLocalization} from '@/localization/provider';
 
 const icons = {
   overview: LayoutDashboard,
@@ -63,6 +66,7 @@ const icons = {
   promotions: TicketPercent,
   ratings: Star,
   questions: MessageSquare,
+  shopping: Bell,
   catalog: Tags,
   inventory: Boxes,
   stores: Store,
@@ -113,6 +117,8 @@ export function AppShell({ area, currentPath, eyebrow, title, description, actio
 }
 
 function AmbientScene() {
+ const {t: _uiText}=useUiLocalization();
+
   return (
     <div className="ambient-scene" aria-hidden="true">
       <span className="ambient-grid" />
@@ -136,7 +142,7 @@ function AmbientScene() {
         </svg>
         <span className="commerce-stage commerce-stage-checkout">
           <CreditCard size={23} strokeWidth={1.7} />
-          <i>Checkout</i>
+          <i>{_uiText("Checkout")}</i>
         </span>
         <span className="commerce-parcel">
           <span className="commerce-parcel-top" />
@@ -163,34 +169,36 @@ function AmbientScene() {
 }
 
 function AppShellLoading({ area, children }) {
+ const {t: _uiText}=useUiLocalization();
+
   return (
     <div className="app-frame app-frame-loading" aria-busy="true">
-      <a className="skip-link" href="#workspace">Skip to workspace</a>
+      <a className="skip-link" href="#workspace">{_uiText("Skip to workspace")}</a>
       <AmbientScene />
       <aside className="sidebar shell-loading-sidebar" aria-label={`${areaNames[area]} navigation`}>
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true"><ShoppingBag size={19} strokeWidth={2.1} /></span>
-          <span className="brand-copy"><strong>Commerce OS</strong><small>Operations cloud</small></span>
+          <span className="brand-copy"><strong>Commerce OS</strong><small>{_uiText("Operations cloud")}</small></span>
         </div>
         <div className="context-switcher shell-loading-context">
           <span className="context-switcher-icon" aria-hidden="true"><Store size={17} /></span>
           <span className="context-switcher-copy">
-            <small>Workspace</small>
+            <small>{_uiText("Workspace")}</small>
             <strong>{areaNames[area]}</strong>
           </span>
         </div>
-        <div className="nav-section-label"><span>Workspace</span><i>1</i></div>
+        <div className="nav-section-label"><span>{_uiText("Workspace")}</span><i>1</i></div>
         <nav className="primary-nav" aria-label="Current workspace">
           <span className="nav-link shell-loading-nav-item" data-active data-icon="overview">
             <span className="nav-link-icon"><LayoutDashboard size={17} aria-hidden="true" /></span>
-            <span className="nav-link-label">Overview</span>
+            <span className="nav-link-label">{_uiText("Overview")}</span>
           </span>
         </nav>
         <div className="sidebar-foot">
           <span className="environment-symbol" aria-hidden="true"><span className="environment-dot" /></span>
           <span className="sidebar-foot-copy">
-            <small>System environment</small>
-            <strong>Development <em>Online</em></strong>
+            <small>{_uiText("System environment")}</small>
+            <strong>{_uiText("Development")} <em>{_uiText("Online")}</em></strong>
           </span>
         </div>
       </aside>
@@ -212,6 +220,9 @@ function AppShellLoading({ area, children }) {
 }
 
 function AppShellContent({ area, currentPath, eyebrow, title, description, action, backgroundPaused = false, children }) {
+ const {t: _uiText}=useUiLocalization();
+
+  const {t}=useLocalization();
   const router = useRouter();
   const { user, logout, activeTenantId, selectTenant } = useAuth();
   const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -324,22 +335,22 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
 
   return (
     <div className="app-frame" data-sidebar-collapsed={sidebarCollapsed || undefined}>
-      <a className="skip-link" href="#workspace">Skip to workspace</a>
+      <a className="skip-link" href="#workspace">{_uiText("Skip to workspace")}</a>
       {area === "admin" && currentPath === "/admin" ? <CommerceBackground paused={backgroundPaused} /> : <AmbientScene />}
       <aside className="sidebar" data-open={navigationOpen || undefined} id="workspace-navigation" aria-label={`${areaNames[area]} navigation`}>
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true"><ShoppingBag size={19} strokeWidth={2.1} /></span>
-          <span className="brand-copy"><strong>Commerce OS</strong><small>Operations cloud</small></span>
-          <button aria-label="Close navigation" className="icon-button sidebar-close" onClick={() => setNavigationOpen(false)} type="button">
+          <span className="brand-copy"><strong>Commerce OS</strong><small>{_uiText("Operations cloud")}</small></span>
+          <button aria-label={_uiText("Close navigation")} className="icon-button sidebar-close" onClick={() => setNavigationOpen(false)} type="button">
             <X size={19} aria-hidden="true" />
           </button>
         </div>
 
         <div className="context-switcher-wrap">
-          <button aria-expanded={switcherOpen} className="context-switcher" disabled={(!compactViewport && sidebarCollapsed) || contexts.length < 2} onClick={() => setSwitcherOpen((current) => !current)} title={!compactViewport && sidebarCollapsed ? "Expand navigation to change workspace" : undefined} type="button" aria-label="Change active workspace">
+          <button aria-expanded={switcherOpen} className="context-switcher" disabled={(!compactViewport && sidebarCollapsed) || contexts.length < 2} onClick={() => setSwitcherOpen((current) => !current)} title={!compactViewport && sidebarCollapsed ? "Expand navigation to change workspace" : undefined} type="button" aria-label={_uiText("Change active workspace")}>
             <span className="context-switcher-icon" aria-hidden="true"><Store size={17} /></span>
             <span className="context-switcher-copy">
-              <small>Active workspace</small>
+              <small>{_uiText("Active workspace")}</small>
               <strong>{activeContext?.name || areaNames[area]}</strong>
             </span>
             <ChevronDown size={16} aria-hidden="true" />
@@ -356,11 +367,11 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
           ) : null}
         </div>
 
-        <div className="nav-section-label"><span>Workspace</span><i>{items.length}</i></div>
-        <nav className="primary-nav" aria-label="Workspace pages">
+        <div className="nav-section-label"><span>{_uiText("Workspace")}</span><i>{items.length}</i></div>
+        <nav className="primary-nav" aria-label={_uiText("Workspace pages")}>
           {groups.map((group, index) => <details className="workspace-nav-group" key={`${group.id}:${sidebarCollapsed && !compactViewport}`}
             open={(!compactViewport && sidebarCollapsed) || index === 0 || group.items.some(item => item.href === currentItem?.href)}>
-            <summary><span>{group.label}</span><ChevronDown size={14} aria-hidden="true" /></summary>
+            <summary><span>{t(group.label)}</span><ChevronDown size={14} aria-hidden="true" /></summary>
             <div className="workspace-nav-group-items">{group.items.map((item) => {
             const Icon = icons[item.icon] || ClipboardList;
             const active = item.href === currentPath
@@ -370,7 +381,7 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
             return (
               <Link aria-current={active ? "page" : undefined} className="nav-link" data-active={active || undefined} data-icon={item.icon} href={item.href} key={item.href} onClick={() => setNavigationOpen(false)} ref={active ? activeLinkRef : undefined} title={!compactViewport && sidebarCollapsed ? item.label : undefined}>
                 <span className="nav-link-icon"><Icon size={17} aria-hidden="true" /></span>
-                <span className="nav-link-label">{item.label}</span>
+                <span className="nav-link-label">{t(item.label)}</span>
                 <ChevronRight className="nav-link-arrow" size={14} aria-hidden="true" />
               </Link>
             );
@@ -380,14 +391,14 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
         <div className="sidebar-foot">
           <span className="environment-symbol" aria-hidden="true"><span className="environment-dot" /></span>
           <span className="sidebar-foot-copy">
-            <small>System environment</small>
-            <strong>Development <em>Online</em></strong>
+            <small>{_uiText("System environment")}</small>
+            <strong>{_uiText("Development")} <em>{_uiText("Online")}</em></strong>
           </span>
         </div>
       </aside>
 
       <button
-        aria-label="Close navigation"
+        aria-label={_uiText("Close navigation")}
         className="sidebar-backdrop"
         data-open={navigationOpen || undefined}
         onClick={() => setNavigationOpen(false)}
@@ -401,11 +412,11 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
             <button
               aria-controls="workspace-navigation"
               aria-expanded={compactViewport ? navigationOpen : !sidebarCollapsed}
-              aria-label={compactViewport ? "Open navigation" : sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+              aria-label={compactViewport ? _uiText("Open navigation") : sidebarCollapsed ? _uiText("Expand navigation") : _uiText("Collapse navigation")}
               className="icon-button sidebar-toggle"
               data-collapsed={(!compactViewport && sidebarCollapsed) || undefined}
               onClick={toggleSidebar}
-              title={compactViewport ? "Open navigation" : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={compactViewport ? _uiText("Open navigation") : sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               type="button"
             >
               {compactViewport ? <Menu size={20} aria-hidden="true" /> : <span className="sidebar-toggle-glyph" aria-hidden="true"><PanelLeftClose className="sidebar-toggle-collapse" size={19} /><PanelLeftOpen className="sidebar-toggle-expand" size={19} /></span>}
@@ -413,10 +424,11 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
             <span className="mobile-topbar-brand">Commerce OS</span>
             <span className="topbar-location">
               <span className="topbar-location-icon" data-icon={currentItem.icon}><CurrentIcon size={17} aria-hidden="true" /></span>
-              <span><small>{areaLabels[area]}</small><strong>{currentItem.label}</strong></span>
+              <span><small>{t(areaLabels[area])}</small><strong>{t(currentItem.label)}</strong></span>
             </span>
           </div>
           <div className="topbar-actions">
+            <LocalizationControls />
             <NotificationInbox key={`${user.id}:${area}:${contextTenantId}:${merchantId}:${JSON.stringify(user.ui?.capabilities)}`}
               area={area} tenantId={contextTenantId} merchantId={merchantId} items={items} />
             <ThemeToggle />
@@ -427,10 +439,10 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
               </span>
               <span className="avatar" aria-hidden="true">{initials}</span>
             </div>
-            <button aria-label="Change password" className="icon-button" onClick={() => setPasswordDialogOpen(true)} title="Change password" type="button">
+            <button aria-label={_uiText("Change password")} className="icon-button" onClick={() => setPasswordDialogOpen(true)} title={_uiText("Change password")} type="button">
               <KeyRound size={17} aria-hidden="true" />
             </button>
-            <button aria-label="Sign out" className="icon-button" onClick={handleLogout} type="button">
+            <button aria-label={_uiText("Sign out")} className="icon-button" onClick={handleLogout} type="button">
               <LogOut size={17} aria-hidden="true" />
             </button>
           </div>
@@ -439,9 +451,9 @@ function AppShellContent({ area, currentPath, eyebrow, title, description, actio
         <main className="workspace" id="workspace">
           <header className="page-heading">
             <div>
-              <p className="eyebrow">{eyebrow}</p>
-              <h1>{title}</h1>
-              <p className="page-description">{description}</p>
+              <p className="eyebrow">{t(eyebrow)}</p>
+              <h1>{t(title)}</h1>
+              <p className="page-description">{t(description)}</p>
             </div>
             {action}
           </header>

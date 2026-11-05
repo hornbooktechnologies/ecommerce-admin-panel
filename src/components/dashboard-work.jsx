@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import Link from "next/link";
 import { ArrowRight, Boxes, ClipboardCheck, PackageCheck, ShoppingBag, Store, Tags } from "lucide-react";
 import { dashboardAge, dashboardCanOpen, dashboardWork } from "@/lib/dashboard-work";
@@ -8,6 +9,8 @@ import "./dashboard-work.css";
 const icons = { INVENTORY: Boxes, ORDER: ShoppingBag, RETURN: ClipboardCheck, VENDOR: Store };
 
 export function DashboardWork({ data, user, tenantId }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { groups, records, attentionAreas, allClear } = dashboardWork(data, user, tenantId);
   const products = dashboardCanOpen(user, tenantId, "/admin/catalog/products", "catalog.product.read");
   const stock = dashboardCanOpen(user, tenantId, "/admin/inventory", "inventory.stock.read");
@@ -22,7 +25,7 @@ export function DashboardWork({ data, user, tenantId }) {
         const Icon = icons[group.type];
         return <li key={group.type} data-tone={group.tone}>
           <span className="dashboard-task-icon"><Icon size={22} aria-hidden="true" /></span>
-          <div className="dashboard-task-copy"><h3>{group.title} <span className="dashboard-task-count">{group.count === null ? "Unavailable" : group.count.toLocaleString("en-IN")}</span></h3><p>{group.description}</p>{group.count === 0 && <small>Queue clear</small>}</div>
+          <div className="dashboard-task-copy"><h3>{group.title} <span className="dashboard-task-count">{group.count === null ? _uiText("Unavailable") : group.count.toLocaleString("en-IN")}</span></h3><p>{group.description}</p>{group.count === 0 && <small>Queue clear</small>}</div>
           <Link className="button button-secondary dashboard-task-action" href={group.href}>{group.action}<ArrowRight size={16} aria-hidden="true" /></Link>
         </li>;
       })}</ul>
@@ -33,7 +36,7 @@ export function DashboardWork({ data, user, tenantId }) {
     </section>
     <aside className="dashboard-next-steps" aria-labelledby="next-steps-title"><p className="eyebrow">Helpful shortcuts</p><h2 id="next-steps-title">Product to sellable stock</h2><p>Publishing a product and making it available are separate steps.</p>
       <ol><li><span>1</span><div><strong>Prepare the product</strong><p>Add its details, variant prices and images. New products are saved as drafts.</p></div></li><li><span>2</span><div><strong>Make stock available</strong><p>Receive the exact variant into the correct seller and warehouse. Bundles use component stock.</p></div></li><li><span>3</span><div><strong>Review publication</strong><p>Check the product and seller offer before publishing. A published item can still be out of stock.</p></div></li></ol>
-      {products && <Link className="button button-secondary" href="/admin/catalog/products"><Tags size={16} aria-hidden="true" />Manage products<ArrowRight size={16} aria-hidden="true" /></Link>}
+      {products && <Link className="button button-secondary" href="/admin/catalog/products"><Tags size={16} aria-hidden="true" />{_uiText("Manage products")}<ArrowRight size={16} aria-hidden="true" /></Link>}
       {stock && <Link className="button button-secondary" href="/admin/inventory"><Boxes size={16} aria-hidden="true" />Open inventory<ArrowRight size={16} aria-hidden="true" /></Link>}
       <small>This is workflow guidance, not a live store-readiness check.</small>
     </aside>

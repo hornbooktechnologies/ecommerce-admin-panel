@@ -1,5 +1,7 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Archive, CheckCircle2, Download, FileCheck2, FileSpreadsheet,
   PackageCheck, RefreshCcw, Rocket, Send, UploadCloud, XCircle } from "lucide-react";
@@ -29,15 +31,19 @@ function saveFile(file) {
 }
 
 function Summary({ job }) {
+ const {t: _uiText}=useUiLocalization();
+
   return <div className="bulk-validation-summary" aria-label="Import validation summary">
-    <span><FileSpreadsheet aria-hidden="true" size={18} /><small>Rows</small><strong>{job.totalRows}</strong></span>
+    <span><FileSpreadsheet aria-hidden="true" size={18} /><small>{_uiText("Rows")}</small><strong>{job.totalRows}</strong></span>
     <span data-tone="positive"><CheckCircle2 aria-hidden="true" size={18} /><small>Valid</small><strong>{job.validRows}</strong></span>
     <span data-tone={job.invalidRows ? "danger" : "neutral"}><XCircle aria-hidden="true" size={18} /><small>Errors</small><strong>{job.invalidRows}</strong></span>
-    <span><PackageCheck aria-hidden="true" size={18} /><small>Committed</small><strong>{job.committedRows || 0}</strong></span>
+    <span><PackageCheck aria-hidden="true" size={18} /><small>{_uiText("Committed")}</small><strong>{job.committedRows || 0}</strong></span>
   </div>;
 }
 
 export default function BulkOperationsPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth(); const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const allowedTypes = useMemo(() => Object.entries(types).filter(([, item]) => canUser(user, "admin", item.permission, tenantId)), [tenantId, user]);
   const [type, setType] = useState(allowedTypes[0]?.[0] || "PRODUCT"); const [file, setFile] = useState(null);
@@ -124,13 +130,13 @@ export default function BulkOperationsPage() {
   }
 
   const currentMeta = types[type]; const rows = products?.items || [];
-  return <AppShell area="admin" currentPath="/admin/bulk-operations" eyebrow="Data operations" title="Bulk operations"
+  return <AppShell area="admin" currentPath="/admin/bulk-operations" eyebrow="Data operations" title={_uiText("Bulk operations")}
     description="Validate first, review every exception, then commit catalog, pricing, and stock changes.">
     <div className="bulk-mode-tabs" role="tablist" aria-label="Bulk operation mode">
       <button aria-selected={mode === "import"} data-active={mode === "import" || undefined} onClick={() => setMode("import")} role="tab" type="button"><UploadCloud size={17} />CSV import & export</button>
       {(canUpdateProducts || canPublishProducts) ? <button aria-selected={mode === "status"} data-active={mode === "status" || undefined} onClick={() => setMode("status")} role="tab" type="button"><Rocket size={17} />Product lifecycle</button> : null}
     </div>
-    {error ? <div className="inline-state inline-state-error" role="alert"><AlertTriangle size={17} /><span>{error}</span><button onClick={() => setError("")} type="button">Dismiss</button></div> : null}
+    {error ? <div className="inline-state inline-state-error" role="alert"><AlertTriangle size={17} /><span>{error}</span><button onClick={() => setError("")} type="button">{_uiText("Dismiss")}</button></div> : null}
     {mode === "import" ? <>
       <section className="bulk-console" aria-labelledby="bulk-console-title">
         <div className="bulk-console-head"><div><p className="eyebrow">Staged CSV workflow</p><h2 id="bulk-console-title">Prepare and validate import</h2><p>{currentMeta.hint}</p></div><div className="bulk-download-actions"><button className="button button-secondary" disabled={Boolean(busy) || !canImportCurrent} onClick={() => download("template")} type="button"><Download size={16} />Template</button><button className="button button-secondary" disabled={Boolean(busy) || !canImportCurrent} onClick={() => download("export")} type="button"><Download size={16} />Current export</button></div></div>
@@ -147,7 +153,7 @@ export default function BulkOperationsPage() {
             ? "This older interrupted import needs manual reconciliation. Some changes may already have applied. Automatic resume is blocked; do not upload the same stock again."
             : job.canResume ? "This import is ready to resume. Only unfinished rows will run; committed and failed rows will not be replayed."
               : "Processing is active or its five-minute recovery window has not expired. Refresh this job to see progress. Do not upload the file again."}</span></div> : null}
-          {job.rows?.some((row) => row.errors?.length) ? <div className="table-wrap"><table className="tenant-table bulk-error-table"><thead><tr><th>Row</th><th>Field</th><th>Issue</th></tr></thead><tbody>{job.rows.flatMap((row) => row.errors.map((item, index) => <tr key={`${row.id}-${item.field}-${index}`}><td>{row.rowNumber}</td><td><code>{item.field}</code></td><td>{item.message}</td></tr>))}</tbody></table></div> : <div className="bulk-ready-state"><FileCheck2 size={20} aria-hidden="true" /><span><strong>{job.status === "READY" ? "Every row passed validation." : job.status === "COMPLETED" ? "Import completed." : "Review the import result."}</strong><small>{job.status === "READY" ? "The import is ready to commit using current catalog and inventory rules." : `${job.committedRows} rows reported committed; ${job.failedRows} reported failed. Check the error report and current records before any retry.`}</small></span></div>}
+          {job.rows?.some((row) => row.errors?.length) ? <div className="table-wrap"><><ListingExcelExport data={job.rows.flatMap(row => row.errors.map(error => ({rowNumber: row.rowNumber, field: error.field, message: error.message})))} title="import validation errors"/><table className="tenant-table bulk-error-table"><thead><tr><th>Row</th><th>Field</th><th>Issue</th></tr></thead><tbody>{job.rows.flatMap((row) => row.errors.map((item, index) => <tr key={`${row.id}-${item.field}-${index}`}><td>{row.rowNumber}</td><td><code>{item.field}</code></td><td>{item.message}</td></tr>))}</tbody></table></></div> : <div className="bulk-ready-state"><FileCheck2 size={20} aria-hidden="true" /><span><strong>{job.status === "READY" ? "Every row passed validation." : job.status === "COMPLETED" ? "Import completed." : "Review the import result."}</strong><small>{job.status === "READY" ? "The import is ready to commit using current catalog and inventory rules." : `${job.committedRows} rows reported committed; ${job.failedRows} reported failed. Check the error report and current records before any retry.`}</small></span></div>}
           {job.canResume && allowedTypes.some(([key]) => key === job.type) ? <label style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBlock: 16, lineHeight: 1.5 }}><input type="checkbox" checked={resumeConfirmed} disabled={Boolean(busy)} onChange={(event) => setResumeConfirmed(event.target.checked)} /><span>Resume this original job using unfinished rows only. Failed rows stay in the error report.</span></label> : null}
           <div className="bulk-review-actions" style={{ flexWrap: "wrap", gap: 12 }}>
             {canReadJobs ? <button className="button button-secondary" disabled={Boolean(busy)} onClick={() => review(job.id)} type="button"><RefreshCcw size={16} aria-hidden="true" />Refresh status</button> : null}
@@ -157,8 +163,8 @@ export default function BulkOperationsPage() {
         </div> : null}
       </section>
       {canReadJobs ? <section className="tenant-directory bulk-history" aria-labelledby="bulk-history-title"><div className="section-heading"><div><p className="eyebrow">Audit trail</p><h2 id="bulk-history-title">Recent import jobs</h2></div><button className="icon-button" aria-label="Refresh import jobs" onClick={loadJobs} type="button"><RefreshCcw size={17} /></button></div>
-        {!jobs ? <GlobalLoader inline label="Loading import history" /> : !jobs.items.length ? <div className="empty-workspace"><FileSpreadsheet size={26} /><h3>No imports yet</h3><p>Validated CSV jobs will appear here with their result and error report.</p></div> : <>
-          <div className="table-wrap"><table className="tenant-table"><thead><tr><th>File</th><th>Type</th><th>Result</th><th>Rows</th><th>Created</th><th>Actions</th></tr></thead><tbody>
+        {!jobs ? <GlobalLoader inline label="Loading import history" /> : !jobs.items.length ? <div className="empty-workspace"><FileSpreadsheet size={26} /><h3>No imports yet</h3><p>Validated CSV jobs will appear here with their result and error report.</p></div> : <><ListingExcelExport data={jobs} title="jobs" disabled={loading}/>
+          <div className="table-wrap"><table className="tenant-table"><thead><tr><th>File</th><th>Type</th><th>Result</th><th>{_uiText("Rows")}</th><th>Created</th><th>{_uiText("Actions")}</th></tr></thead><tbody>
             {jobs.items.map((item) => <tr key={item.id}>
               <td data-label="File"><strong>{item.fileName}</strong><small>{item.createdByName}</small><small style={{ overflowWrap: "anywhere" }}>Ref: {item.id}</small></td>
               <td data-label="Type">{title(item.type)}</td>
@@ -166,16 +172,16 @@ export default function BulkOperationsPage() {
               <td data-label="Rows">{item.status === "READY" || item.status === "VALIDATED_WITH_ERRORS" ? `${item.validRows} valid / ${item.totalRows}` : `${item.committedRows} committed · ${item.failedRows} failed / ${item.totalRows}`}</td>
               <td data-label="Created">{new Date(item.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</td>
               <td data-label="Actions"><div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                <button className="button button-secondary" disabled={Boolean(busy)} onClick={() => review(item.id)} type="button" aria-label={`Review import ${item.fileName}`}>Review</button>
+                <button className="button button-secondary" disabled={Boolean(busy)} onClick={() => review(item.id)} type="button" aria-label={`Review import ${item.fileName}`}>{_uiText("Review")}</button>
                 {item.invalidRows || item.failedRows ? <button className="button button-warning" disabled={Boolean(busy)} onClick={() => report(item.id)} type="button"><Download size={15} aria-hidden="true" />Errors</button> : null}
               </div></td>
             </tr>)}
           </tbody></table></div>
-          <TablePagination itemLabel="jobs" onPageChange={(page) => setJobFilters((current) => ({ ...current, page }))} onPageSizeChange={(pageSize) => setJobFilters({ page: 1, pageSize })} page={jobs.page} pageSize={jobs.pageSize} total={jobs.total} totalPages={jobs.totalPages} />
+          <TablePagination  itemLabel="jobs" onPageChange={(page) => setJobFilters((current) => ({ ...current, page }))} onPageSizeChange={(pageSize) => setJobFilters({ page: 1, pageSize })} page={jobs.page} pageSize={jobs.pageSize} total={jobs.total} totalPages={jobs.totalPages} />
         </>}
       </section> : null}</> : <section className="tenant-directory bulk-status-workspace" aria-labelledby="bulk-status-title"><div className="section-heading"><div><p className="eyebrow">Catalog lifecycle</p><h2 id="bulk-status-title">Update selected products</h2><p>Actions still enforce each product's current approval and publication rules.</p></div><span className="bulk-selection-count">{selected.length} selected</span></div>
-      <div className="bulk-status-actions">{canUpdateProducts ? <><button className="button button-secondary" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("submit")} type="button"><Send size={16} />Submit</button><button className="button button-danger" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("archive")} type="button"><Archive size={16} />Archive</button><button className="button button-secondary" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("restore")} type="button"><RefreshCcw size={16} />Restore</button></> : null}{canPublishProducts ? <button className="button button-success" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("publish")} type="button"><Rocket size={16} />Publish approved</button> : null}</div>
-      {!products ? <GlobalLoader inline label="Loading products" /> : <><div className="table-wrap"><table className="tenant-table"><thead><tr><th><input aria-label="Select all products on page" checked={rows.length > 0 && rows.every((item) => selected.includes(item.id))} onChange={(event) => setSelected((current) => event.target.checked ? [...new Set([...current, ...rows.map((item) => item.id)])] : current.filter((id) => !rows.some((item) => item.id === id)))} type="checkbox" /></th><th>Product</th><th>Type</th><th>Approval</th><th>Publication</th></tr></thead><tbody>{rows.map((product) => <tr key={product.id}><td><input aria-label={`Select ${product.name}`} checked={selected.includes(product.id)} onChange={() => setSelected((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} type="checkbox" /></td><td data-label="Product"><strong>{product.name}</strong><small>{product.productCode}</small></td><td data-label="Type">{title(product.vertical)}</td><td data-label="Approval"><Status tone={product.approvalStatus === "APPROVED" ? "positive" : product.approvalStatus === "REJECTED" ? "danger" : "neutral"}>{title(product.approvalStatus)}</Status></td><td data-label="Publication"><Status tone={product.publicationStatus === "PUBLISHED" ? "positive" : product.publicationStatus === "ARCHIVED" ? "danger" : "neutral"}>{title(product.publicationStatus)}</Status></td></tr>)}</tbody></table></div><TablePagination itemLabel="products" onPageChange={setProductPage} onPageSizeChange={(pageSize) => { setProductPage(1); setProductPageSize(pageSize); }} page={products.page} pageSize={products.pageSize} total={products.total} totalPages={products.totalPages} /></>}
+      <div className="bulk-status-actions">{canUpdateProducts ? <><button className="button button-secondary" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("submit")} type="button"><Send size={16} />{_uiText("Submit")}</button><button className="button button-danger" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("archive")} type="button"><Archive size={16} />{_uiText("Archive")}</button><button className="button button-secondary" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("restore")} type="button"><RefreshCcw size={16} />Restore</button></> : null}{canPublishProducts ? <button className="button button-success" disabled={!selected.length || Boolean(busy)} onClick={() => applyStatus("publish")} type="button"><Rocket size={16} />Publish approved</button> : null}</div>
+      {!products ? <GlobalLoader inline label="Loading products" /> : <><ListingExcelExport data={products} title={_uiText("products")} disabled={loading}/><div className="table-wrap"><table className="tenant-table"><thead><tr><th><input aria-label="Select all products on page" checked={rows.length > 0 && rows.every((item) => selected.includes(item.id))} onChange={(event) => setSelected((current) => event.target.checked ? [...new Set([...current, ...rows.map((item) => item.id)])] : current.filter((id) => !rows.some((item) => item.id === id)))} type="checkbox" /></th><th>{_uiText("Product")}</th><th>Type</th><th>Approval</th><th>{_uiText("Publication")}</th></tr></thead><tbody>{rows.map((product) => <tr key={product.id}><td><input aria-label={`Select ${product.name}`} checked={selected.includes(product.id)} onChange={() => setSelected((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} type="checkbox" /></td><td data-label="Product"><strong>{product.name}</strong><small>{product.productCode}</small></td><td data-label="Type">{title(product.vertical)}</td><td data-label="Approval"><Status tone={product.approvalStatus === "APPROVED" ? "positive" : product.approvalStatus === "REJECTED" ? "danger" : "neutral"}>{title(product.approvalStatus)}</Status></td><td data-label="Publication"><Status tone={product.publicationStatus === "PUBLISHED" ? "positive" : product.publicationStatus === "ARCHIVED" ? "danger" : "neutral"}>{title(product.publicationStatus)}</Status></td></tr>)}</tbody></table></div><TablePagination  itemLabel={_uiText("products")} onPageChange={setProductPage} onPageSizeChange={(pageSize) => { setProductPage(1); setProductPageSize(pageSize); }} page={products.page} pageSize={products.pageSize} total={products.total} totalPages={products.totalPages} /></>}
     </section>}
   </AppShell>;
 }

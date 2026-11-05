@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ClipboardCheck, X } from "lucide-react";
@@ -21,6 +22,8 @@ function snapshot(data, lotId) {
 }
 
 export function CountStockDialog({ accessToken, item, onClose, onSaved, tenantId }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [details, setDetails] = useState(null);
   const [form, setForm] = useState(empty);
   const [loading, setLoading] = useState(true), [saving, setSaving] = useState(false);
@@ -145,7 +148,7 @@ export function CountStockDialog({ accessToken, item, onClose, onSaved, tenantId
           </div>}
           {error ? <div id="count-error" ref={errorRef} tabIndex={-1} className="inline-state inline-state-error catalog-error" role="alert"><span>{error}</span>{fieldIssue && !review && canCount ? <button type="button" onClick={() => formRef.current?.elements.namedItem(fieldIssue)?.focus()}>Go to field</button> : null}</div> : null}
         </div>
-        <footer className="dialog-actions catalog-dialog-actions"><span>{saving ? "Rechecking and posting…" : review ? "Step 2 of 2 · Permanent stock correction" : "Step 1 of 2 · No stock changes yet"}</span><div><button className="button button-secondary" disabled={saving} onClick={leave.requestClose} type="button">{canCount ? "Cancel" : "Close"}</button>
+        <footer className="dialog-actions catalog-dialog-actions"><span>{saving ? "Rechecking and posting…" : review ? "Step 2 of 2 · Permanent stock correction" : "Step 1 of 2 · No stock changes yet"}</span><div><button className="button button-secondary" disabled={saving} onClick={leave.requestClose} type="button">{canCount ? _uiText("Cancel") : _uiText("Close")}</button>
           {!balance ? <button className="button button-secondary" onClick={load} type="button">Reload details</button> : canCount ? review ? <><button className="button button-secondary" disabled={saving} onClick={() => { setReview(false); setError(""); }} type="button"><ArrowLeft size={16} aria-hidden="true" />Edit count</button><button className="button button-warning" disabled={saving} onClick={postCount} type="button">{saving ? "Posting…" : "Confirm adjustment"}</button></> : <button className="button button-primary" type="submit">Review adjustment</button> : null}
         </div></footer>
       </form>}

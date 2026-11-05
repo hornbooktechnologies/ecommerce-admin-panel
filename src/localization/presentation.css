@@ -1,0 +1,51 @@
+.topbar [data-localization-controls] {
+  flex-shrink: 0;
+}
+.topbar-actions {
+  flex-wrap: wrap;
+}
+.topbar [data-localization-controls] label {
+  max-width: 120px;
+}
+.topbar [data-localization-controls] select {
+  min-width: 96px;
+}
+.login-access-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+html[data-ui-language="hi"] body,
+html[data-ui-language="gu"] body {
+  font-family:
+    var(--theme-body-font, system-ui), "Nirmala UI", "Noto Sans Devanagari",
+    "Noto Sans Gujarati", sans-serif;
+}
+html[data-ui-language="hi"] :is(h1, h2, h3, h4),
+html[data-ui-language="gu"] :is(h1, h2, h3, h4) {
+  line-height: 1.5;
+  letter-spacing: normal;
+}
+@media (max-width: 760px) {
+  .app-content > .topbar {grid-template-columns:44px minmax(0,1fr);height:auto;}
+  .topbar .topbar-leading {min-width:44px;width:44px;}
+  .topbar .topbar-actions {min-width:0;max-width:100%;flex-wrap:wrap;justify-content:flex-end;gap:8px;}
+  .topbar [data-localization-controls] {flex:1 0 100%;justify-content:flex-end;}
+  .topbar {
+    height: auto;
+    min-height: 80px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar-actions {
+    min-width: 0;
+    gap: 8px;
+  }
+  .topbar [data-localization-controls] select {
+    min-width: 88px;
+  }
+  .topbar [data-localization-controls] label > span {
+    font-size: 10px;
+  }
+}

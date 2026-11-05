@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowDown, ArrowUp, Check, ExternalLink, FileImage, ImagePlus, Images, Pencil,
@@ -59,6 +60,8 @@ function readableBytes(bytes) {
 }
 
 function MediaDialog({ accessToken, initialScope, item, media, onClose, onSaved, productId, tenantId }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [form, setForm] = useState({ altText: item?.altText || "",
     scope: scopeValue(item, initialScope) });
   const [file, setFile] = useState(null);
@@ -115,7 +118,7 @@ function MediaDialog({ accessToken, initialScope, item, media, onClose, onSaved,
     <header><div><p className="eyebrow">Product media</p>
       <h2 id="media-dialog-title">{item ? "Edit catalog image" : "Upload product image"}</h2>
       <p>{item ? "Upload a replacement or improve how this image is described and assigned." : "Upload once and share it across every size carrying the selected colour."}</p>
-    </div><button aria-label="Close" className="icon-button" disabled={saving} onClick={onClose} type="button"><X size={20} /></button></header>
+    </div><button aria-label={_uiText("Close")} className="icon-button" disabled={saving} onClick={onClose} type="button"><X size={20} /></button></header>
     <div className="procurement-dialog-body">
       {error ? <div className="inline-state inline-state-error" role="alert">{error}</div> : null}
       <div className="form-grid">
@@ -144,7 +147,7 @@ function MediaDialog({ accessToken, initialScope, item, media, onClose, onSaved,
           </label>
           <small>{item ? "A replacement keeps this image's gallery position and primary-image setting." : "For sharp listings, use a square image at least 1200 × 1200 px."}</small>
         </div>
-        <label className="form-field catalog-span-2"><span>Alternative text</span>
+        <label className="form-field catalog-span-2"><span>{_uiText("Alternative text")}</span>
           <input maxLength={500} placeholder="Describe the product shown" value={form.altText}
             onChange={(event) => setForm((current) => ({ ...current, altText: event.target.value }))} />
           <small>Describe the visible product, colour and angle for screen-reader users.</small>
@@ -164,22 +167,24 @@ function MediaDialog({ accessToken, initialScope, item, media, onClose, onSaved,
       </div>
     </div>
     <footer><span><ShieldCheck size={15} />{item ? "Changes apply immediately and are audited." : "Secure upload managed by Commerce OS"}</span>
-      <div><button className="button button-secondary" disabled={saving} onClick={onClose} type="button">Cancel</button>
+      <div><button className="button button-secondary" disabled={saving} onClick={onClose} type="button">{_uiText("Cancel")}</button>
         <button className="button button-primary" disabled={saving} type="submit">
-          {item ? <Pencil size={16} /> : <UploadCloud size={16} />}{saving ? "Saving…" : item ? "Save image" : "Upload image"}
+          {item ? <Pencil size={16} /> : <UploadCloud size={16} />}{saving ? _uiText("Saving…") : item ? "Save image" : "Upload image"}
         </button></div>
     </footer>
   </form></div></Portal>;
 }
 
 function DeleteDialog({ item, onClose, onConfirm, saving }) {
+ const {t: _uiText}=useUiLocalization();
+
   const ref = useRef(null);
   useModal(onClose, ref, saving);
   return <Portal><div className="procurement-dialog-backdrop"><section aria-labelledby="delete-media-title"
     aria-modal="true" className="procurement-dialog procurement-dialog-compact" ref={ref} role="alertdialog">
     <header><div><p className="eyebrow">Remove image</p><h2 id="delete-media-title">Delete this catalog image?</h2>
       <p>The image will be removed from this product gallery immediately.</p></div>
-      <button aria-label="Close" className="icon-button" disabled={saving} onClick={onClose} type="button"><X size={20} /></button>
+      <button aria-label={_uiText("Close")} className="icon-button" disabled={saving} onClick={onClose} type="button"><X size={20} /></button>
     </header>
     <div className="procurement-dialog-body"><div className="media-delete-preview"
       style={{ backgroundImage: `url("${item.url.replaceAll('"', '%22')}")` }} role="img"
@@ -193,11 +198,13 @@ function DeleteDialog({ item, onClose, onConfirm, saving }) {
 }
 
 function MediaCard({ canManage, index, item, length, onDelete, onEdit, onMove, onPrimary, working }) {
+ const {t: _uiText}=useUiLocalization();
+
   return <article className="media-card" data-primary={item.role === "PRIMARY" || undefined}>
     <div className="media-card-image" style={{ backgroundImage: `url("${item.url.replaceAll('"', '%22')}")` }}
       role="img" aria-label={item.altText || "Product image"}>
       <a aria-label="Open original image" href={item.url} rel="noreferrer" target="_blank"><ExternalLink size={16} /></a>
-      {item.role === "PRIMARY" ? <Status tone="positive"><Star size={12} />Primary</Status> : null}
+      {item.role === "PRIMARY" ? <Status tone="positive"><Star size={12} />{_uiText("Primary")}</Status> : null}
     </div>
     <div className="media-card-copy"><strong>{item.altText || "Alternative text not set"}</strong>
       <small>{item.colorName || item.variantName || "General product image"}</small></div>
@@ -217,6 +224,8 @@ function MediaCard({ canManage, index, item, length, onDelete, onEdit, onMove, o
 }
 
 export default function CatalogMediaPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const canManage = canUser(user, "admin", "catalog.product.update", tenantId);
@@ -314,15 +323,15 @@ export default function CatalogMediaPage() {
   return <AppShell area="admin" currentPath="/admin/catalog/media" eyebrow="Merchandising" title="Product media"
     description="Manage general imagery, shared colour galleries, ordering, primary images and accessible descriptions."
     action={canManage && selectedId ? <button className="button button-primary" disabled={!media}
-      onClick={() => setAdding({})} type="button"><ImagePlus size={17} />Add image</button> : null}>
+      onClick={() => setAdding({})} type="button"><ImagePlus size={17} />{_uiText("Add image")}</button> : null}>
     <CatalogTabs currentPath="/admin/catalog/media" />
     {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span>
-      <button onClick={() => setError("")} type="button">Dismiss</button></div> : null}
+      <button onClick={() => setError("")} type="button">{_uiText("Dismiss")}</button></div> : null}
     <div className="media-workspace">
-      <aside className="media-product-rail" aria-label="Products">
-        <div><p className="eyebrow">Catalog</p><h2>Choose a product</h2></div>
+      <aside className="media-product-rail" aria-label={_uiText("Products")}>
+        <div><p className="eyebrow">{_uiText("Catalog")}</p><h2>Choose a product</h2></div>
         <label className="compact-search"><Search aria-hidden="true" size={16} />
-          <span className="sr-only">Search products</span><input placeholder="Name or code" value={search}
+          <span className="sr-only">{_uiText("Search products")}</span><input placeholder="Name or code" value={search}
             onChange={(event) => setSearch(event.target.value)} /></label>
         <div className="media-product-list">{loading ? <GlobalLoader inline label="Loading products" />
           : filtered.map((product) => <button data-active={selectedId === product.id || undefined} key={product.id}

@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, ChevronRight, LockKeyhole, Plus, Save, Shield, Trash2, UsersRound, X } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -24,6 +25,8 @@ function groupPermissions(permissions) {
 }
 
 export default function RolesPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [roles, setRoles] = useState([]);
@@ -133,7 +136,7 @@ export default function RolesPage() {
       area="admin" currentPath="/admin/settings/roles" eyebrow="Access control" title="Roles & permissions"
       description="Build least-privilege access profiles for tenant and marketplace teams."
     >
-      {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={() => setError("")} type="button">Dismiss</button></div> : null}
+      {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={() => setError("")} type="button">{_uiText("Dismiss")}</button></div> : null}
       {loading ? <GlobalLoader inline label="Loading access policies" /> : (
         <div className="roles-workspace">
           <aside className="role-list" aria-label="Tenant roles">
@@ -178,7 +181,7 @@ export default function RolesPage() {
                 <span className="role-impact"><UsersRound size={16} aria-hidden="true" />{selectedRole ? `${selectedRole.assignedUsers} members currently use this role` : "No members assigned yet"}</span>
                 <div>
                   {selectedRole && !selectedRole.isSystem ? <button className={deleteArmed ? "button button-danger" : "button button-secondary"} disabled={saving} onClick={removeRole} type="button"><Trash2 size={15} aria-hidden="true" />{deleteArmed ? "Confirm delete" : "Delete role"}</button> : null}
-                  <button className="button button-primary" disabled={saving} type="submit"><Save size={15} aria-hidden="true" />{saving ? "Saving…" : editor.isNew ? "Create role" : "Save changes"}</button>
+                  <button className="button button-primary" disabled={saving} type="submit"><Save size={15} aria-hidden="true" />{saving ? _uiText("Saving…") : editor.isNew ? "Create role" : _uiText("Save changes")}</button>
                 </div>
               </footer>
             </form>

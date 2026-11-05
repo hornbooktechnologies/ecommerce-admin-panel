@@ -1,10 +1,13 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useId, useRef, useState } from "react";
 import { inboxPreferencesRequest, saveInboxPreferencesRequest } from "@/lib/api-client";
 import styles from "./inbox-preferences.module.css";
 
 export function InboxPreferences({ accessToken, tenantId, onBusy }) {
+ const {t: _uiText}=useUiLocalization();
+
   const heading = useId(); const [data, setData] = useState(null); const [disabled, setDisabled] = useState([]);
   const [error, setError] = useState(""); const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [reload, setReload] = useState(0);
@@ -35,7 +38,7 @@ export function InboxPreferences({ accessToken, tenantId, onBusy }) {
     finally { if (mutation.current === controller) mutation.current = null; if (!controller.signal.aborted) setSaving(false); }
   }
   return <section className={styles.panel} aria-labelledby={heading}>
-    <h3 id={heading} ref={headingRef} tabIndex={-1}>Notification preferences</h3>
+    <h3 id={heading} ref={headingRef} tabIndex={-1}>{_uiText("Notification preferences")}</h3>
     <p>Choose optional in-app updates for this workspace. These settings do not change emails or newsletter subscriptions.</p>
     {loading ? <p role="status">Loading preferences…</p> : data ? <form onSubmit={save} aria-busy={saving}>
       <fieldset disabled={saving}><legend>Optional updates</legend>{data.options.map((item) => <label className={styles.option} key={item.category}>
@@ -45,7 +48,7 @@ export function InboxPreferences({ accessToken, tenantId, onBusy }) {
       </label>)}</fieldset>
       <div className={styles.required}><strong>Always enabled</strong><p>{data.required.map((item) => item.label).join(" · ")}</p><small>Account and security emails are not controlled here.</small></div>
       <p>Changes apply to new deliveries, including queued events not yet processed. Previously muted deliveries are not restored when re-enabled.</p>
-      <div className={styles.actions}><button type="button" disabled={saving} onClick={() => { setDisabled([]); setMessage(""); }}>Enable all optional updates</button><button className={styles.save} type="submit" disabled={saving || !dirty}>{saving ? "Saving…" : "Save preferences"}</button></div>
+      <div className={styles.actions}><button type="button" disabled={saving} onClick={() => { setDisabled([]); setMessage(""); }}>Enable all optional updates</button><button className={styles.save} type="submit" disabled={saving || !dirty}>{saving ? _uiText("Saving…") : "Save preferences"}</button></div>
       {dirty ? <p className={styles.unsaved}>Changes are not saved yet.</p> : null}
     </form> : null}
     {error ? <p className={styles.error} role="alert">{error}</p> : null}

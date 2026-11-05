@@ -1,4 +1,5 @@
 'use client';
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import {useCallback,useEffect,useId,useState} from 'react';
 import {reviewPhotosRequest,reviewPhotoFileRequest,moderateReviewPhotoRequest} from '@/lib/api-client';
 import styles from './review-photo-moderation.module.css';
@@ -8,9 +9,11 @@ function PrivatePhoto({photo,ratingId,accessToken,tenantId}){
  return url?<img src={url} alt={photo.alt} width={photo.width} height={photo.height}/>:<p>{failed?'Preview unavailable. Refresh photos to retry.':photo.storageState==='READY'?'Loading private preview…':'Incomplete upload; not available for approval.'}</p>;
 }
 function PhotoCard({photo,ratingId,accessToken,tenantId,canModerate,onSaved}){
+ const {t: _uiText}=useUiLocalization();
+
  const [note,setNote]=useState(photo.moderationNote||''),[busy,setBusy]=useState(false),[error,setError]=useState('');const uid=useId();
  async function decide(status){if(busy)return;if(status!=='APPROVED'&&note.trim().length<3){setError('Add a reason of at least three characters.');return;}setBusy(true);setError('');try{await moderateReviewPhotoRequest(ratingId,photo.id,{version:photo.version,status,note:note.trim()},accessToken,tenantId);await onSaved();}catch(failure){setError(failure.message||'Unable to save. Refresh photos and try again.');}finally{setBusy(false);}}
- return <article className={styles.card}><PrivatePhoto {...{photo,ratingId,accessToken,tenantId}}/><strong>{photo.alt}</strong><span className={styles.status}>{photo.status.toLowerCase()} · {photo.storageState==='READY'?'Upload complete':'Incomplete'}</span>{error&&<p role="alert" className={styles.error}>{error}</p>}{canModerate&&photo.storageState==='READY'&&<><label htmlFor={uid}>Internal photo decision note</label><textarea id={uid} maxLength={1000} rows={2} value={note} disabled={busy} onChange={event=>setNote(event.target.value)}/><div className={styles.actions}>{[['APPROVED','Approve','button-success'],['HIDDEN','Hide','button-warning'],['REJECTED','Reject','button-danger']].map(([status,label,tone])=><button className={`button ${tone}`} key={status} type="button" disabled={busy||photo.status===status} onClick={()=>decide(status)}>{busy?'Saving…':label}</button>)}</div></>}</article>;
+ return <article className={styles.card}><PrivatePhoto {...{photo,ratingId,accessToken,tenantId}}/><strong>{photo.alt}</strong><span className={styles.status}>{photo.status.toLowerCase()} · {photo.storageState==='READY'?'Upload complete':'Incomplete'}</span>{error&&<p role="alert" className={styles.error}>{error}</p>}{canModerate&&photo.storageState==='READY'&&<><label htmlFor={uid}>Internal photo decision note</label><textarea id={uid} maxLength={1000} rows={2} value={note} disabled={busy} onChange={event=>setNote(event.target.value)}/><div className={styles.actions}>{[['APPROVED','Approve','button-success'],['HIDDEN','Hide','button-warning'],['REJECTED','Reject','button-danger']].map(([status,label,tone])=><button className={`button ${tone}`} key={status} type="button" disabled={busy||photo.status===status} onClick={()=>decide(status)}>{busy?_uiText("Saving…"):label}</button>)}</div></>}</article>;
 }
 export default function ReviewPhotoModeration({ratingId,accessToken,tenantId,canModerate,onUpdated}){
  const [photos,setPhotos]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState('');

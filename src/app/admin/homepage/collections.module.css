@@ -1,0 +1,22 @@
+.search {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.search > label {
+  flex: 1 1 240px;
+}
+.actions {
+  margin-top: 24px;
+  padding-inline: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+}
+@media (max-width: 600px) {
+  .search button {
+    width: 100%;
+  }
+}

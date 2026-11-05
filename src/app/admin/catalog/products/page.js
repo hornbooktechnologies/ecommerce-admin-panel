@@ -1,4 +1,6 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -253,6 +255,8 @@ function customFieldsPayload(fields) {
 }
 
 function PendingImage({ disabled, file, index, productName, onRemove }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [previewUrl, setPreviewUrl] = useState("");
   useEffect(() => {
     const url = URL.createObjectURL(file);
@@ -272,7 +276,7 @@ function PendingImage({ disabled, file, index, productName, onRemove }) {
         </span>
       )}
       <figcaption>
-        {index === 0 ? "Primary" : `Gallery ${index}`} · Ready to upload
+        {index === 0 ? _uiText("Primary") : `Gallery ${index}`} · Ready to upload
       </figcaption>
       <button
         aria-label={`Remove selected image ${index + 1}`}
@@ -295,6 +299,8 @@ function ProductImagePicker({
   onError,
   productName,
 }) {
+ const {t: _uiText}=useUiLocalization();
+
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
   const total = existingUrls.length + files.length;
@@ -408,7 +414,7 @@ function ProductImagePicker({
                 src={url}
               />
               <figcaption>
-                {index === 0 ? "Primary" : `Gallery ${index}`}
+                {index === 0 ? _uiText("Primary") : `Gallery ${index}`}
               </figcaption>
               <button
                 aria-label={`Remove image ${index + 1}`}
@@ -444,6 +450,8 @@ function ProductImagePicker({
 }
 
 function CustomFieldsEditor({ fields, onChange, errors = [] }) {
+ const {t: _uiText}=useUiLocalization();
+
   function addField() {
     if (fields.length >= 30) return;
     onChange([
@@ -528,7 +536,7 @@ function CustomFieldsEditor({ fields, onChange, errors = [] }) {
                     <option value="TEXT">Text</option>
                     <option value="NUMBER">Number</option>
                     <option value="BOOLEAN">Yes / No</option>
-                    <option value="DATE">Date</option>
+                    <option value="DATE">{_uiText("Date")}</option>
                   </select>
                 </label>
                 <label className="form-field custom-field-value">
@@ -594,6 +602,8 @@ function CustomFieldsEditor({ fields, onChange, errors = [] }) {
 }
 
 function ProductDialog({ lookups, onClose, onCreated }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const each =
@@ -1186,7 +1196,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                     <div className="form-grid">
                       <label className="form-field">
                         <span>
-                          Product code <em>*</em>
+                          {_uiText("Product code")} <em>*</em>
                         </span>
                         <input
                           minLength={2}
@@ -1205,7 +1215,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                       </label>
                       <label className="form-field">
                         <span>
-                          Product name <em>*</em>
+                          {_uiText("Product name")} <em>*</em>
                         </span>
                         <input
                           minLength={2}
@@ -1237,7 +1247,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                         </small>
                       </label>
                       <label className="form-field">
-                        <span>Category</span>
+                        <span>{_uiText("Category")}</span>
                         <select
                           data-field="categoryId"
                           value={form.categoryId}
@@ -1257,7 +1267,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                         </small>
                       </label>
                       <label className="form-field">
-                        <span>Brand</span>
+                        <span>{_uiText("Brand")}</span>
                         <select
                           data-field="brandId"
                           value={form.brandId}
@@ -1411,7 +1421,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                       <AxisPicker
                         icon={Tags}
                         items={lookups.sizes}
-                        label="Sizes"
+                        label={_uiText("Sizes")}
                         selected={selectedSizes}
                         onToggle={toggleSize}
                       />
@@ -1833,7 +1843,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                             }
                           >
                             <option value="MANUFACTURER">Manufacturer</option>
-                            <option value="SELLER">Seller</option>
+                            <option value="SELLER">{_uiText("Seller")}</option>
                             <option value="EXTENDED">Extended</option>
                           </select>
                         </label>
@@ -2035,7 +2045,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                 </p>
                 <dl className="setup-review">
                   <div>
-                    <dt>Product</dt>
+                    <dt>{_uiText("Product")}</dt>
                     <dd>
                       {form.name} · {form.productCode}
                     </dd>
@@ -2071,7 +2081,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                     </dd>
                   </div>
                   <div>
-                    <dt>Publication</dt>
+                    <dt>{_uiText("Publication")}</dt>
                     <dd>Draft — not published</dd>
                   </div>
                   <div>
@@ -2126,7 +2136,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                 onClick={leaveGuard.requestClose}
                 type="button"
               >
-                {createdProductId ? "Close saved draft" : "Cancel"}
+                {createdProductId ? "Close saved draft" : _uiText("Cancel")}
               </button>
               {step > 0 && !createdProductId ? (
                 <button
@@ -2135,8 +2145,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                   onClick={() => goTo(step - 1)}
                   type="button"
                 >
-                  Back
-                </button>
+                  {_uiText("Back")} </button>
               ) : null}
               <button
                 className="button button-primary"
@@ -2149,7 +2158,7 @@ function ProductDialog({ lookups, onClose, onCreated }) {
                     ? "Retry remaining images"
                     : step === 4
                       ? "Create draft"
-                      : "Continue"}
+                      : _uiText("Continue")}
               </button>
             </div>
           </footer>
@@ -2162,6 +2171,8 @@ function ProductDialog({ lookups, onClose, onCreated }) {
 }
 
 function EditProductDialog({ product, lookups, onClose, onSaved }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [form, setForm] = useState(null);
@@ -2318,7 +2329,7 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
           </div>
           <div>
             <p className="eyebrow">Catalog editor</p>
-            <h2 id="edit-product-title">Edit product</h2>
+            <h2 id="edit-product-title">{_uiText("Edit product")}</h2>
           </div>
           <button
             aria-label="Close edit product dialog"
@@ -2358,7 +2369,7 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
                 <div className="form-grid">
                   <label className="form-field catalog-span-2">
                     <span>
-                      Product name <em>*</em>
+                      {_uiText("Product name")} <em>*</em>
                     </span>
                     <input
                       autoFocus
@@ -2369,7 +2380,7 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
                     />
                   </label>
                   <label className="form-field">
-                    <span>Category</span>
+                    <span>{_uiText("Category")}</span>
                     <select
                       value={form.categoryId || ""}
                       onChange={(event) =>
@@ -2385,7 +2396,7 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
                     </select>
                   </label>
                   <label className="form-field">
-                    <span>Brand</span>
+                    <span>{_uiText("Brand")}</span>
                     <select
                       value={form.brandId || ""}
                       onChange={(event) =>
@@ -2617,14 +2628,13 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
                   onClick={leaveGuard.requestClose}
                   type="button"
                 >
-                  Cancel
-                </button>
+                  {_uiText("Cancel")} </button>
                 <button
                   className="button button-primary"
                   disabled={saving}
                   type="submit"
                 >
-                  {saving ? "Saving and uploading…" : "Save changes"}
+                  {saving ? "Saving and uploading…" : _uiText("Save changes")}
                 </button>
               </div>
             </footer>
@@ -2641,6 +2651,8 @@ function EditProductDialog({ product, lookups, onClose, onSaved }) {
 }
 
 function ProductLifecycleDialog({ product, action, onClose, onDone }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [confirmation, setConfirmation] = useState("");
@@ -2779,7 +2791,7 @@ function ProductLifecycleDialog({ product, action, onClose, onDone }) {
         <h2 id="product-lifecycle-title">{copy.title}</h2>
         <p>{copy.description}</p>
         <div className="dialog-product">
-          <small>Product</small>
+          <small>{_uiText("Product")}</small>
           <strong>{product.name}</strong>
           <span>{product.productCode}</span>
         </div>
@@ -2843,15 +2855,14 @@ function ProductLifecycleDialog({ product, action, onClose, onDone }) {
             onClick={onClose}
             type="button"
           >
-            Cancel
-          </button>
+            {_uiText("Cancel")} </button>
           <button
             className={`button ${["delete", "reject"].includes(action) ? "button-danger" : action === "archive" ? "button-warning" : action === "submit" ? "button-primary" : "button-success"}`}
             disabled={busy || !deleteConfirmed || !noteValid}
             onClick={confirm}
             type="button"
           >
-            {busy ? "Saving..." : copy.button}
+            {busy ? _uiText("Saving...") : copy.button}
           </button>
         </div>
       </section>
@@ -2860,6 +2871,8 @@ function ProductLifecycleDialog({ product, action, onClose, onDone }) {
 }
 
 function PriceDialog({ product, onClose, onSaved }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [details, setDetails] = useState(null);
@@ -3108,14 +3121,13 @@ function PriceDialog({ product, onClose, onSaved }) {
                   onClick={leaveGuard.requestClose}
                   type="button"
                 >
-                  Cancel
-                </button>
+                  {_uiText("Cancel")} </button>
                 <button
                   className="button button-primary"
                   disabled={saving || !rows.length}
                   type="submit"
                 >
-                  {saving ? "Saving…" : "Save prices"}
+                  {saving ? _uiText("Saving…") : "Save prices"}
                 </button>
               </div>
             </footer>
@@ -3142,6 +3154,8 @@ function ProductRow({
   onSizeGuide,
   onSpecifications,
 }) {
+ const {t: _uiText}=useUiLocalization();
+
   const meta = verticalMeta[product.vertical] || verticalMeta.GENERAL;
   const Icon = meta.icon;
   const archived = product.publicationStatus === "ARCHIVED";
@@ -3225,8 +3239,7 @@ function ProductRow({
                 type="button"
               >
                 <PencilLine size={14} aria-hidden="true" />
-                Edit
-              </button>
+                {_uiText("Edit")} </button>
             ) : null}
             {canUpdate ? (
               <button
@@ -3236,8 +3249,7 @@ function ProductRow({
                 type="button"
               >
                 <BadgeIndianRupee size={14} aria-hidden="true" />
-                Prices
-              </button>
+                {_uiText("Prices")} </button>
             ) : null}
             {canUpdate && product.vertical === "CLOTHING" ? (
               <button
@@ -3246,8 +3258,7 @@ function ProductRow({
                 onClick={() => onSizeGuide(product)}
                 type="button"
               >
-                Size guide
-              </button>
+                {_uiText("Size guide")} </button>
             ) : null}
             {canUpdate ? (
               <button
@@ -3256,8 +3267,7 @@ function ProductRow({
                 onClick={() => onSpecifications(product)}
                 type="button"
               >
-                Specifications
-              </button>
+                {_uiText("Specifications")} </button>
             ) : null}
             {canSubmit ? (
               <button
@@ -3267,8 +3277,7 @@ function ProductRow({
                 type="button"
               >
                 <Send size={14} aria-hidden="true" />
-                Submit
-              </button>
+                {_uiText("Submit")} </button>
             ) : null}
             {canReview ? (
               <>
@@ -3300,8 +3309,7 @@ function ProductRow({
                 type="button"
               >
                 <Rocket size={14} aria-hidden="true" />
-                Publish
-              </button>
+                {_uiText("Publish")} </button>
             ) : null}
             {canUpdate &&
             (archived ||
@@ -3320,7 +3328,7 @@ function ProductRow({
                 ) : (
                   <Archive size={14} aria-hidden="true" />
                 )}
-                {archived ? "Restore" : "Archive"}
+                {archived ? "Restore" : _uiText("Archive")}
               </button>
             ) : null}
             {canUpdate &&
@@ -3333,8 +3341,7 @@ function ProductRow({
                 type="button"
               >
                 <Trash2 size={14} aria-hidden="true" />
-                Delete
-              </button>
+                {_uiText("Delete")} </button>
             ) : null}
           </div>
         ) : null}
@@ -3344,6 +3351,8 @@ function ProductRow({
 }
 
 export default function ProductsPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [filters, setFilters] = useState({
@@ -3408,7 +3417,7 @@ export default function ProductsPage() {
       area="admin"
       currentPath="/admin/catalog/products"
       eyebrow="Merchandising"
-      title="Product catalog"
+      title={_uiText("Product catalog")}
       description="Variant-level catalog, pricing, and retail readiness."
       action={
         <div className="page-actions">
@@ -3416,8 +3425,7 @@ export default function ProductsPage() {
             className="button button-secondary"
             href="/admin/catalog/masters"
           >
-            Manage masters
-          </Link>
+            {_uiText("Manage masters")} </Link>
           {canCreate ? (
             <button
               className="button button-primary"
@@ -3426,8 +3434,7 @@ export default function ProductsPage() {
               type="button"
             >
               <Plus size={16} aria-hidden="true" />
-              New product
-            </button>
+              {_uiText("New product")} </button>
           ) : null}
         </div>
       }
@@ -3467,8 +3474,7 @@ export default function ProductsPage() {
             onClick={() => setCreatedNotice(null)}
             type="button"
           >
-            Dismiss
-          </button>
+            {_uiText("Dismiss")} </button>
         </section>
       ) : null}
       <section
@@ -3518,10 +3524,10 @@ export default function ProductsPage() {
             role="search"
           >
             <label className="compact-search">
-              <span className="sr-only">Search products</span>
+              <span className="sr-only">{_uiText("Search products")}</span>
               <Search size={16} aria-hidden="true" />
               <input
-                placeholder="Name, code or SKU"
+                placeholder={_uiText("Name, code or SKU")}
                 value={draftSearch}
                 onChange={(event) => setDraftSearch(event.target.value)}
               />
@@ -3553,8 +3559,7 @@ export default function ProductsPage() {
               </span>
             ) : null}
             <button className="button button-secondary" type="submit">
-              Search
-            </button>
+              {_uiText("Search")} </button>
           </form>
         </div>
         {!loading && lookups && !catalogConfigured ? (
@@ -3569,8 +3574,7 @@ export default function ProductsPage() {
           <div className="inline-state inline-state-error" role="alert">
             <span>{error}</span>
             <button onClick={load} type="button">
-              Try again
-            </button>
+              {_uiText("Try again")} </button>
           </div>
         ) : null}
         {loading ? (
@@ -3596,18 +3600,18 @@ export default function ProductsPage() {
             ) : null}
           </div>
         ) : (
-          <>
+          <><ListingExcelExport data={result} title={_uiText("products")} disabled={loading}/>
             <div className="table-wrap">
               <table className="tenant-table catalog-table catalog-lifecycle-table">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Vertical</th>
-                    <th>Variants</th>
-                    <th>Price</th>
-                    <th>Available</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{_uiText("Product")}</th>
+                    <th>{_uiText("Vertical")}</th>
+                    <th>{_uiText("Variants")}</th>
+                    <th>{_uiText("Price")}</th>
+                    <th>{_uiText("Available")}</th>
+                    <th>{_uiText("Status")}</th>
+                    <th>{_uiText("Actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -3629,8 +3633,8 @@ export default function ProductsPage() {
                 </tbody>
               </table>
             </div>
-            <TablePagination
-              itemLabel="products"
+            <TablePagination 
+              itemLabel={_uiText("products")}
               onPageChange={(page) =>
                 setFilters((current) => ({ ...current, page }))
               }

@@ -1,0 +1,31 @@
+.export { display: flex; flex-direction: column; gap: .35rem; min-width: 0; max-width: 100%; margin-block: .5rem; }
+/* Detail modals never expose listing export actions, including nested/portalled dialogs. */
+.export[hidden],
+:is(dialog, [role="dialog"], [role="alertdialog"], [class*="dialog-backdrop"]) .export { display: none; }
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 42px; white-space: nowrap; flex-shrink: 0; }
+.button svg { color: var(--action, #1f6d52); flex-shrink: 0; }
+.button.exportButton {
+  --export-teal: #07857d;
+  --export-green: #0b883e;
+  color: #fff;
+  background: linear-gradient(105deg, var(--export-teal), var(--export-green));
+  border: 1px solid transparent;
+  border-radius: calc(14px * var(--theme-radius-scale, 1));
+  font-weight: 750;
+  box-shadow: 0 3px 9px rgb(7 133 125 / 16%);
+  transition: box-shadow var(--motion-fast, 160ms) var(--ease-standard, ease), filter var(--motion-fast, 160ms) var(--ease-standard, ease);
+}
+.button.exportButton svg { color: currentColor; }
+.button.exportButton:hover:not(:disabled) { color: #fff; filter: brightness(.94); box-shadow: 0 5px 14px rgb(7 133 125 / 24%); transform: none; }
+.button.exportButton:active:not(:disabled) { color: #fff; filter: brightness(.88); transform: none; }
+.button.exportButton:disabled { color: #fff; opacity: .5; box-shadow: none; cursor: not-allowed; }
+.button.exportButton:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .button.exportButton { transition: none; } }
+.scope { min-width: 0; }
+.scope select { width: 100%; min-height: 42px; max-width: 100%; font: inherit; font-size: .8125rem; background-color: var(--surface, #fff); color: var(--ink, #202623); border: 1px solid var(--line, #d5dfd9); border-radius: 10px; padding: .6rem 2.25rem .6rem .75rem; }
+.controls :is(button,select):focus-visible { outline: 2px solid var(--action, #1f6d52); outline-offset: 3px; }
+.status { color: var(--muted, #68776f); font-size: .75rem; line-height: 1.5; max-width: 42ch; overflow-wrap: anywhere; }
+.status:empty { display: none; }
+.status[role="alert"] { color: var(--danger, #b64138); }
+@media (max-width: 540px) { .export { width: 100%; } .controls { width: 100%; } .scope { flex: 1 1 145px; } .button { flex: 1 1 auto; } }

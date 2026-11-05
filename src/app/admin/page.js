@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Clock3, RotateCcw, TriangleAlert } from "lucide-react";
@@ -22,6 +23,8 @@ function DashboardRouteSkeleton() {
 }
 
 function DashboardContent({ accessToken, tenantId, user }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,15 +51,15 @@ function DashboardContent({ accessToken, tenantId, user }) {
     title: titleCase(event.action), detail: `${String(event.entityType || "Activity").replaceAll("_", " ")} · ${event.actorName || "System"}`
   }));
   return <AppShell
-    action={dashboardCanOpen(user, tenantId, "/admin/catalog/products", "catalog.product.read") ? <div className="dashboard-header-actions"><Link className="button button-primary" href="/admin/catalog/products">View products<ArrowUpRight aria-hidden="true" size={16} /></Link></div> : null}
-    area="admin" currentPath="/admin" description="See your store at a glance, review open tasks and take the next step."
-    eyebrow="Daily operations" loadingFallback={<DashboardRouteSkeleton />} title="Dashboard">
+    action={dashboardCanOpen(user, tenantId, "/admin/catalog/products", "catalog.product.read") ? <div className="dashboard-header-actions"><Link className="button button-primary" href="/admin/catalog/products">{_uiText("View products")}<ArrowUpRight aria-hidden="true" size={16} /></Link></div> : null}
+    area="admin" currentPath="/admin" description={_uiText("See your store at a glance, review open tasks and take the next step.")}
+    eyebrow={_uiText("Daily operations")} loadingFallback={<DashboardRouteSkeleton />} title={_uiText("Dashboard")}>
     <div className={styles.dashboard}>
-      {loading ? <DashboardSkeleton /> : error ? <section className="dashboard-error" role="alert"><span><TriangleAlert aria-hidden="true" size={22} /></span><div><strong>We couldn't load your dashboard</strong><p>{error}</p><p>Your task status is unknown until the data loads.</p></div><button className="button button-secondary" onClick={load} type="button"><RotateCcw aria-hidden="true" size={15} />Try again</button></section> : data ? <>
+      {loading ? <DashboardSkeleton /> : error ? <section className="dashboard-error" role="alert"><span><TriangleAlert aria-hidden="true" size={22} /></span><div><strong>We couldn't load your dashboard</strong><p>{error}</p><p>Your task status is unknown until the data loads.</p></div><button className="button button-secondary" onClick={load} type="button"><RotateCcw aria-hidden="true" size={15} />{_uiText("Try again")}</button></section> : data ? <>
         <div className={styles.snapshot}><span><Clock3 size={14} aria-hidden="true" />Updated {dashboardDate(updatedAt, { hour: "2-digit", minute: "2-digit" })} UTC</span><span>Reload this page to update the counts.</span></div>
         <DashboardQuickView data={data} user={user} tenantId={tenantId} />
         <div className={styles.workGrid}><DashboardPriorities data={data} user={user} tenantId={tenantId} /><DashboardShortcuts user={user} tenantId={tenantId} /></div>
-        {canOrders && <section aria-labelledby="performance-title"><div className={styles.sectionHeading}><div><h2 id="performance-title">Order performance</h2><p>Understand order value and your current workload.</p></div></div><div className={styles.charts}><DashboardSalesChart data={data.salesTrend} /><DashboardOrderChart data={data.orderMix} /></div></section>}
+        {canOrders && <section aria-labelledby="performance-title"><div className={styles.sectionHeading}><div><h2 id="performance-title">{_uiText("Order performance")}</h2><p>{_uiText("Understand order value and your current workload.")}</p></div></div><div className={styles.charts}><DashboardSalesChart data={data.salesTrend} /><DashboardOrderChart data={data.orderMix} /></div></section>}
         <DashboardActivity events={events} />
       </> : null}
     </div>

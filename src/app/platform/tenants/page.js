@@ -1,4 +1,6 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -22,6 +24,8 @@ function formatDate(value) {
 }
 
 export default function TenantDirectoryPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken } = useAuth();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -62,7 +66,7 @@ export default function TenantDirectoryPage() {
       currentPath="/platform/tenants"
       description="Create businesses, inspect their operating structure, and control access without deleting business data."
       eyebrow="Platform control"
-      title="Tenants"
+      title={_uiText("Tenants")}
     >
       <section className="tenant-summary" aria-label="Tenant status summary">
         {[
@@ -92,7 +96,7 @@ export default function TenantDirectoryPage() {
         <div className="section-heading tenant-directory-heading">
           <div>
             <p className="eyebrow">Business directory</p>
-            <h2 id="tenant-directory-title">All tenant accounts</h2>
+            <h2 id="tenant-directory-title">All tenant accounts</h2><ListingExcelExport data={result} title="tenants" disabled={loading}/>
           </div>
           <form className="directory-filters" onSubmit={applyFilters} role="search">
             <label className="compact-search">
@@ -103,20 +107,20 @@ export default function TenantDirectoryPage() {
             <label>
               <span className="sr-only">Filter by status</span>
               <select onChange={(event) => setStatus(event.target.value)} value={status}>
-                <option value="ALL">All statuses</option>
-                <option value="ACTIVE">Active</option>
+                <option value="ALL">{_uiText("All statuses")}</option>
+                <option value="ACTIVE">{_uiText("Active")}</option>
                 <option value="PENDING">In setup</option>
-                <option value="SUSPENDED">Suspended</option>
+                <option value="SUSPENDED">{_uiText("Suspended")}</option>
               </select>
             </label>
-            <button className="button button-secondary" type="submit">Apply</button>
+            <button className="button button-secondary" type="submit">{_uiText("Apply")}</button>
           </form>
         </div>
 
         {error ? (
           <div className="inline-state inline-state-error" role="alert">
             <span>{error}</span>
-            <button onClick={loadTenants} type="button">Try again</button>
+            <button onClick={loadTenants} type="button">{_uiText("Try again")}</button>
           </div>
         ) : null}
 
@@ -134,7 +138,7 @@ export default function TenantDirectoryPage() {
             <table className="tenant-table">
               <thead>
                 <tr>
-                  <th>Tenant</th><th>Owner</th><th>Stores</th><th>Users</th><th>Created</th><th>Status</th><th><span className="sr-only">Open</span></th>
+                  <th>Tenant</th><th>Owner</th><th>{_uiText("Stores")}</th><th>Users</th><th>Created</th><th>{_uiText("Status")}</th><th><span className="sr-only">Open</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -158,7 +162,7 @@ export default function TenantDirectoryPage() {
           </div>
         )}
 
-        {result && items.length ? <TablePagination
+        {result && items.length ? <TablePagination 
           itemLabel="tenants"
           onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
           onPageSizeChange={(pageSize) => setFilters((current) => ({ ...current, page: 1, pageSize }))}

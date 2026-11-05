@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import {
   Warehouse
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {LocalizationControls} from '@/localization/provider';
 import { useAuth } from "@/components/auth-provider";
 import { homeForUser } from "@/lib/auth-routing";
 
@@ -37,6 +39,8 @@ const workflow = [
 ];
 
 export default function LoginPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const router = useRouter();
   const { status, user, login } = useAuth();
   const errorRef = useRef(null);
@@ -140,16 +144,16 @@ export default function LoginPage() {
       </section>
 
       <section className="login-access" aria-labelledby="login-title">
-        <div className="login-access-top"><ThemeToggle /></div>
+        <div className="login-access-top"><LocalizationControls /><ThemeToggle /></div>
         <div className="login-form-wrap">
           <p className="eyebrow">Authorised access</p>
           <h2 id="login-title">Welcome back</h2>
           <p className="login-intro">Sign in with your platform, business or vendor account.</p>
           {notice ? <div className="login-notice" role="status"><Check aria-hidden="true" size={16} />{notice}</div> : null}
 
-          <form className="login-form" onSubmit={submit} noValidate>
+          <form className="login-form" method="post" onSubmit={submit} noValidate>
             <label className="field">
-              <span>Email address</span>
+              <span>{_uiText("Email address")}</span>
               <input
                 autoComplete="email"
                 autoFocus
@@ -165,10 +169,10 @@ export default function LoginPage() {
               {fieldErrors.email ? <small className="field-error" id="email-error">{fieldErrors.email}</small> : null}
             </label>
 
-            <div className="login-form-meta"><Link href="/forgot-password">Forgot password?</Link></div>
+            <div className="login-form-meta"><Link href="/forgot-password">{_uiText("Forgot password?")}</Link></div>
 
             <label className="field">
-              <span>Password</span>
+              <span>{_uiText("Password")}</span>
               <span className="password-field">
                 <input
                   autoComplete="current-password"

@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
@@ -28,6 +29,8 @@ const content = {
 };
 
 export function TenantActionDialog({ action, tenantName, busy, error, onClose, onConfirm }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [reason, setReason] = useState("");
   const copy = content[action];
   const dialogRef = useRef(null);
@@ -78,9 +81,9 @@ export function TenantActionDialog({ action, tenantName, busy, error, onClose, o
         </label>
         {error ? <div className="form-error" role="alert">{error}</div> : null}
         <div className="dialog-actions">
-          <button className="button button-secondary" disabled={busy} onClick={onClose} type="button">Cancel</button>
+          <button className="button button-secondary" disabled={busy} onClick={onClose} type="button">{_uiText("Cancel")}</button>
           <button className={`button ${copy.tone === "danger" ? "button-danger" : "button-primary"}`} disabled={busy || reason.trim().length < 3} onClick={() => onConfirm(reason.trim())} type="button">
-            {busy ? "Saving…" : copy.label}
+            {busy ? _uiText("Saving…") : copy.label}
           </button>
         </div>
       </section>

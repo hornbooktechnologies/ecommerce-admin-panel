@@ -1,0 +1,147 @@
+.panel {
+  padding: clamp(16px, 2vw, 24px);
+  margin-block: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  min-width: 0;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.header h3 {
+  margin: 3px 0 0;
+  font-size: 1.05rem;
+}
+.header p {
+  margin: 0;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: var(--action);
+  background: color-mix(in srgb, var(--action) 10%, transparent);
+}
+.note {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.error {
+  color: var(--danger);
+  padding: 12px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+.success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--action);
+  font-weight: 700;
+}
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0;
+}
+.summary div {
+  min-width: 0;
+}
+.summary dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-bottom: 5px;
+}
+.summary dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.panel h4 {
+  margin: 18px 0 12px;
+  font-size: 1rem;
+}
+.amount {
+  font-size: 1.5rem;
+  font-weight: 750;
+  margin: 12px 0 20px;
+}
+.amount small {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.fields input,
+.fields textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.fields input[type="datetime-local"] {
+  color-scheme: light dark;
+}
+.wide,
+.confirm {
+  grid-column: 1/-1;
+}
+.confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+  font-size: 0.875rem;
+  padding-block: 8px;
+  cursor: pointer;
+}
+.confirm input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 3px 0 0;
+  accent-color: var(--action);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: 18px 0;
+}
+.actions button {
+  min-height: 44px;
+}
+@media (max-width: 640px) {
+  .fields,
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .actions {
+    justify-content: stretch;
+  }
+  .actions button {
+    flex: 1 1 160px;
+  }
+}

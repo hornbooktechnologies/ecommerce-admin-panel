@@ -1,4 +1,5 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {useAuth} from './auth-provider';
@@ -8,6 +9,8 @@ import {SizeGuideModal} from './size-guide-modal';
 import styles from './size-guide-modal.module.css';
 
 export function ProductSpecificationsDialog({product,onClose}){
+ const {t: _uiText}=useUiLocalization();
+
  const {user,accessToken,activeTenantId}=useAuth(),tenantId=tenantIdForUser(user,'admin',activeTenantId);
  const [assignment,setAssignment]=useState(null),[values,setValues]=useState({}),[initial,setInitial]=useState({}),[error,setError]=useState(''),[busy,setBusy]=useState(false),lock=useRef(false);
  useEffect(()=>{const controller=new AbortController();specificationsRequest(`/products/${product.id}/specifications`,{accessToken,tenantId,signal:controller.signal}).then(data=>{const current=Object.fromEntries(data.definitions.map(d=>[d.id,d.value===null?'':String(d.value)]));setAssignment(data);setInitial(current);setValues(current);}).catch(cause=>{if(!controller.signal.aborted)setError(cause.message);});return()=>controller.abort();},[accessToken,tenantId,product.id]);
@@ -25,5 +28,5 @@ export function ProductSpecificationsDialog({product,onClose}){
    <small>{d.group} · {d.customerVisible?'Customer-visible':'Internal only'}{d.helpText?` · ${d.helpText}`:''}</small>
   </label>)}</div>
   {error&&<p className="form-error" role="alert">{error}</p>}
- </div><footer className={styles.footer}><button type="button" className="button button-secondary" disabled={busy} onClick={()=>dismiss()}>Cancel</button><button type="submit" className="button button-primary" disabled={!assignment||busy||!dirty}>{busy?'Saving…':'Save values'}</button></footer></form>}</SizeGuideModal>;
+ </div><footer className={styles.footer}><button type="button" className="button button-secondary" disabled={busy} onClick={()=>dismiss()}>{_uiText("Cancel")}</button><button type="submit" className="button button-primary" disabled={!assignment||busy||!dirty}>{busy?_uiText("Saving…"):'Save values'}</button></footer></form>}</SizeGuideModal>;
 }

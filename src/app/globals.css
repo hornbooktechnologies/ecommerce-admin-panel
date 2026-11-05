@@ -1331,6 +1331,7 @@ h2 {
 }
 
 .table-wrap {
+  position: relative;
   width: 100%;
   overflow-x: auto;
 }

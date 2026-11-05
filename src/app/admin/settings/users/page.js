@@ -1,4 +1,6 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
+import { ListingExcelExport } from "@/components/listing-excel-export";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck, UserRoundCheck, UserRoundX, UsersRound, X } from "lucide-react";
@@ -19,6 +21,8 @@ import {
 const tone = { ACTIVE: "positive", INVITED: "warning", SUSPENDED: "danger" };
 
 function UserDialog({ roles, onClose, onCreated }) {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [form, setForm] = useState({
@@ -71,14 +75,14 @@ function UserDialog({ roles, onClose, onCreated }) {
         <p className="access-dialog-copy">Create secure tenant access and assign the member's initial role. Access remains inactive until you approve it.</p>
         <form onSubmit={submit}>
           <div className="form-grid">
-            <label className="form-field"><span>First name <em>*</em></span><input autoComplete="given-name" autoFocus required value={form.firstName} onChange={(event) => update("firstName", event.target.value)} /></label>
-            <label className="form-field"><span>Last name</span><input autoComplete="family-name" value={form.lastName} onChange={(event) => update("lastName", event.target.value)} /></label>
-            <label className="form-field access-span-2"><span>Email address <em>*</em></span><input autoComplete="email" required type="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></label>
+            <label className="form-field"><span>{_uiText("First name")} <em>*</em></span><input autoComplete="given-name" autoFocus required value={form.firstName} onChange={(event) => update("firstName", event.target.value)} /></label>
+            <label className="form-field"><span>{_uiText("Last name")}</span><input autoComplete="family-name" value={form.lastName} onChange={(event) => update("lastName", event.target.value)} /></label>
+            <label className="form-field access-span-2"><span>{_uiText("Email address")} <em>*</em></span><input autoComplete="email" required type="email" value={form.email} onChange={(event) => update("email", event.target.value)} /></label>
             <label className="form-field"><span>Temporary password <em>*</em></span><span className="form-password-control"><input autoComplete="new-password" minLength={12} required type={showPassword ? "text" : "password"} value={form.temporaryPassword} onChange={(event) => update("temporaryPassword", event.target.value)} /><button aria-label={showPassword ? "Hide temporary password" : "Show temporary password"} onClick={() => setShowPassword((current) => !current)} type="button">{showPassword ? <EyeOff size={17} aria-hidden="true" /> : <Eye size={17} aria-hidden="true" />}</button></span><small className="field-help">At least 12 characters. Share it securely.</small></label>
             <label className="form-field"><span>Initial role <em>*</em></span><select required value={form.roleId} onChange={(event) => update("roleId", event.target.value)}>{roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}</select></label>
           </div>
           {error ? <div className="form-error" role="alert">{error}</div> : null}
-          <footer className="dialog-actions"><button className="button button-secondary" onClick={onClose} type="button">Cancel</button><button className="button button-primary" disabled={saving || !form.roleId} type="submit">{saving ? "Creating…" : "Create invitation"}</button></footer>
+          <footer className="dialog-actions"><button className="button button-secondary" onClick={onClose} type="button">{_uiText("Cancel")}</button><button className="button button-primary" disabled={saving || !form.roleId} type="submit">{saving ? "Creating…" : "Create invitation"}</button></footer>
         </form>
       </section>
     </div>
@@ -86,6 +90,8 @@ function UserDialog({ roles, onClose, onCreated }) {
 }
 
 export default function TenantUsersPage() {
+ const {t: _uiText}=useUiLocalization();
+
   const { accessToken, activeTenantId, user } = useAuth();
   const tenantId = tenantIdForUser(user, "admin", activeTenantId);
   const [filters, setFilters] = useState({ search: "", status: "ALL", page: 1, pageSize: 10 });
@@ -154,7 +160,7 @@ export default function TenantUsersPage() {
   return (
     <AppShell
       action={<button className="button button-primary" onClick={() => setDialogOpen(true)} type="button"><Plus size={16} aria-hidden="true" />Invite member</button>}
-      area="admin" currentPath="/admin/settings/users" eyebrow="Access control" title="Team access"
+      area="admin" currentPath="/admin/settings/users" eyebrow="Access control" title={_uiText("Team access")}
       description="Invite staff, control tenant access, and keep role assignments explicit."
     >
       <section className="tenant-summary access-summary" aria-label="Team access summary">
@@ -165,13 +171,13 @@ export default function TenantUsersPage() {
 
       <section className="tenant-directory access-directory" aria-labelledby="team-directory-title">
         <div className="section-heading tenant-directory-heading">
-          <div><p className="eyebrow">Members</p><h2 id="team-directory-title">People with tenant access</h2></div>
+          <div><p className="eyebrow">Members</p><h2 id="team-directory-title">People with tenant access</h2><ListingExcelExport data={result} title="team members" disabled={loading}/></div>
           <form className="directory-filters" onSubmit={(event) => { event.preventDefault(); setFilters((current) => ({ ...current, search: draftSearch.trim(), page: 1 })); }} role="search">
             <label className="compact-search"><span className="sr-only">Search team members</span><Search size={16} aria-hidden="true" /><input placeholder="Name or email" value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} /></label>
-            <button className="button button-secondary" type="submit">Search</button>
+            <button className="button button-secondary" type="submit">{_uiText("Search")}</button>
           </form>
         </div>
-        {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={load} type="button">Try again</button></div> : null}
+        {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={load} type="button">{_uiText("Try again")}</button></div> : null}
         {loading ? <GlobalLoader inline label="Loading team access" /> : members.length === 0 ? (
           <div className="empty-workspace"><UsersRound size={28} aria-hidden="true" /><h3>No team members found</h3><p>Invite a member or adjust the current filters.</p></div>
         ) : (
@@ -190,7 +196,7 @@ export default function TenantUsersPage() {
             })}
           </tbody></table></div>
         )}
-        {result && members.length ? <TablePagination
+        {result && members.length ? <TablePagination 
           itemLabel="team members"
           onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
           onPageSizeChange={(pageSize) => setFilters((current) => ({ ...current, page: 1, pageSize }))}

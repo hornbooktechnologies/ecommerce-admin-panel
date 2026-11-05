@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, ClipboardCheck, PackagePlus, X } from "lucide-react";
@@ -13,6 +14,8 @@ const empty = { warehouseId: "", offerId: "", quantity: "", unitCost: "",
 const money = value => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 4 }).format(value);
 
 export function ReceiveStockDialog({ accessToken, onClose, onSaved, options, tenantId }) {
+ const {t: _uiText}=useUiLocalization();
+
   // Keep the reviewed context stable across background token/option refreshes.
   // The API rechecks warehouse, seller and tracking rules when the receipt posts.
   const [choices] = useState(options);
@@ -114,7 +117,7 @@ export function ReceiveStockDialog({ accessToken, onClose, onSaved, options, ten
       }}>
       <header className="access-dialog-head catalog-dialog-head">
         <div className="dialog-icon" data-tone="positive"><PackagePlus size={19} aria-hidden="true" /></div>
-        <div><p className="eyebrow">Goods receipt</p><h2 id="receive-stock-title">Receive stock</h2></div>
+        <div><p className="eyebrow">Goods receipt</p><h2 id="receive-stock-title">{_uiText("Receive stock")}</h2></div>
         <button className="icon-button" aria-label="Close stock receipt" disabled={saving} onClick={leave.requestClose} type="button"><X size={18} /></button>
       </header>
       <ol className={styles.steps} aria-label="Receipt progress">
@@ -127,7 +130,7 @@ export function ReceiveStockDialog({ accessToken, onClose, onSaved, options, ten
           <p className={styles.help}>{review ? "Check the exact seller, warehouse and SKU. Posting updates stock and creates a permanent ledger entry." : "Only variants belonging to the selected warehouse's seller are offered. Nothing is posted until you confirm the review."}</p>
           {!review ? <div inert={saving}>
             <div className="form-grid inventory-form-grid">
-              <label className="form-field"><span>Warehouse <em>*</em></span><select name="warehouseId" required value={form.warehouseId} {...invalid("warehouseId")} onChange={event => update("warehouseId", event.target.value)}><option value="">Select warehouse</option>{choices.warehouses.map(item => <option key={item.id} value={item.id}>{item.name} · {item.code} · {item.merchantName}</option>)}</select></label>
+              <label className="form-field"><span>{_uiText("Warehouse")} <em>*</em></span><select name="warehouseId" required value={form.warehouseId} {...invalid("warehouseId")} onChange={event => update("warehouseId", event.target.value)}><option value="">Select warehouse</option>{choices.warehouses.map(item => <option key={item.id} value={item.id}>{item.name} · {item.code} · {item.merchantName}</option>)}</select></label>
               <label className="form-field"><span>Product variant <em>*</em></span><select name="offerId" required disabled={!warehouse} value={form.offerId} {...invalid("offerId")} onChange={event => update("offerId", event.target.value)}><option value="">Select variant</option>{offers.map(item => <option key={item.id} value={item.id}>{item.productName} · {item.variantName} · {item.sku}</option>)}</select></label>
               <label className="form-field"><span>Received quantity {offer?.uomCode ? `(${offer.uomCode})` : ""} <em>*</em></span><input name="quantity" {...receiptQuantityAttributes(offer?.serialTrackingEnabled)} required type="number" value={form.quantity} {...invalid("quantity")} onChange={event => update("quantity", event.target.value)} /></label>
               <label className="form-field"><span>Unit cost (₹, optional)</span><input min="0" step="0.0001" type="number" value={form.unitCost} onChange={event => update("unitCost", event.target.value)} /></label>
@@ -143,8 +146,8 @@ export function ReceiveStockDialog({ accessToken, onClose, onSaved, options, ten
             <label className="form-field inventory-notes"><span>Receiving notes</span><textarea maxLength={1000} rows={2} value={form.notes} onChange={event => update("notes", event.target.value)} /></label>
           </div> : <div className={styles.review}>
             <dl>
-              <div><dt>Warehouse</dt><dd>{warehouse?.name}<small>{warehouse?.code}</small></dd></div>
-              <div><dt>Seller</dt><dd>{warehouse?.merchantName}</dd></div>
+              <div><dt>{_uiText("Warehouse")}</dt><dd>{warehouse?.name}<small>{warehouse?.code}</small></dd></div>
+              <div><dt>{_uiText("Seller")}</dt><dd>{warehouse?.merchantName}</dd></div>
               <div><dt>Product / variant</dt><dd>{offer?.productName}<small>{offer?.variantName} · {offer?.sku}</small></dd></div>
               <div><dt>Quantity to add</dt><dd>{Number(form.quantity).toLocaleString("en-IN", { maximumFractionDigits: 6 })} {offer?.uomCode}</dd></div>
               <div><dt>Unit cost</dt><dd>{form.unitCost === "" ? "Not provided" : money(Number(form.unitCost))}</dd></div>
@@ -158,7 +161,7 @@ export function ReceiveStockDialog({ accessToken, onClose, onSaved, options, ten
           {error ? <div ref={errorRef} id="receipt-error" tabIndex={-1} className="inline-state inline-state-error catalog-error" role="alert"><span>{error}</span>{fieldIssue && !review ? <button type="button" onClick={() => formRef.current?.elements.namedItem(fieldIssue)?.focus()}>Go to field</button> : null}</div> : null}
         </div>
         <footer className="dialog-actions catalog-dialog-actions"><span>{saving ? "Posting receipt…" : `Step ${review ? 2 : 1} of 2 · ${review ? "Review before posting" : "No stock changes yet"}`}</span><div>
-          <button className="button button-secondary" disabled={saving} onClick={leave.requestClose} type="button">Cancel</button>
+          <button className="button button-secondary" disabled={saving} onClick={leave.requestClose} type="button">{_uiText("Cancel")}</button>
           {review ? <><button className="button button-secondary" disabled={saving} onClick={editDetails} type="button"><ArrowLeft size={16} aria-hidden="true" />Edit details</button><button className="button button-success" disabled={saving} onClick={postReceipt} type="button">{saving ? "Posting…" : "Confirm & post receipt"}</button></> : <button className="button button-primary" disabled={!offer} type="submit">Review receipt<ArrowRight size={16} aria-hidden="true" /></button>}
         </div></footer>
       </form>

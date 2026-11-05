@@ -1,13 +1,16 @@
 "use client";
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import {useRef,useState} from 'react';
 import {specificationsRequest} from '@/lib/api-client';
 import {SizeGuideModal} from './size-guide-modal';
 import styles from './size-guide-modal.module.css';
 
 export function SpecificationEditor({definition,lookups,context,canSave,onClose}){
- const initial=definition?{code:definition.code,name:definition.name,vertical:definition.vertical,categoryId:definition.categoryId||'',dataType:definition.dataType,unit:definition.unit,group:definition.group,helpText:definition.helpText,options:definition.options.join('\n'),customerVisible:definition.customerVisible,sortOrder:definition.sortOrder,status:definition.status}:{code:'',name:'',vertical:lookups.productTypes[0]?.vertical||'',categoryId:'',dataType:'TEXT',unit:'',group:'Details',helpText:'',options:'',customerVisible:false,sortOrder:0,status:'ACTIVE'};
+ const {t: _uiText}=useUiLocalization();
+
+ const initial=definition?{code:definition.code,name:definition.name,vertical:definition.vertical,categoryId:definition.categoryId||'',dataType:definition.dataType,unit:definition.unit,group:definition.group,helpText:definition.helpText,options:definition.options.join('\n'),customerVisible:definition.customerVisible,filterable:Boolean(definition.filterable),sortOrder:definition.sortOrder,status:definition.status}:{code:'',name:'',vertical:lookups.productTypes[0]?.vertical||'',categoryId:'',dataType:'TEXT',unit:'',group:'Details',helpText:'',options:'',customerVisible:false,filterable:false,sortOrder:0,status:'ACTIVE'};
  const [form,setForm]=useState(initial),[error,setError]=useState(''),[busy,setBusy]=useState(false),lock=useRef(false);
- const set=(key,value)=>setForm(current=>({...current,[key]:value}));
+ const set=(key,value)=>setForm(current=>({...current,[key]:value,...((key==='customerVisible'&&!value)||(key==='dataType'&&!['SELECT','BOOLEAN','NUMBER'].includes(value))?{filterable:false}:{})}));
  const dirty=JSON.stringify(form)!==JSON.stringify(initial);
  async function save(event,dismiss){event.preventDefault();if(lock.current||!canSave)return;lock.current=true;setBusy(true);setError('');
   const body={...form,categoryId:form.categoryId||null,options:form.dataType==='SELECT'?form.options.split('\n').map(value=>value.trim()).filter(Boolean):[],unit:form.dataType==='NUMBER'?form.unit:'',sortOrder:Number(form.sortOrder),...(definition?{version:definition.version}:{})};
@@ -26,9 +29,10 @@ export function SpecificationEditor({definition,lookups,context,canSave,onClose}
    {form.dataType==='SELECT'&&<label className={`form-field ${styles.wide}`}><span>Allowed choices · one per line</span><textarea required rows={5} value={form.options} onChange={event=>set('options',event.target.value)}/><small>Up to 50 unique choices. Used choices cannot be removed.</small></label>}
    <label className={`form-field ${styles.wide}`}><span>Entry instructions (optional)</span><textarea maxLength={500} rows={2} value={form.helpText} onChange={event=>set('helpText',event.target.value)}/></label>
    <label className="form-field"><span>Display order</span><input type="number" min={0} max={9999} required value={form.sortOrder} onChange={event=>set('sortOrder',event.target.value)}/></label>
-   <label className="form-field"><span>Status</span><select value={form.status} onChange={event=>set('status',event.target.value)}><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive · hidden from products and customers</option></select></label>
+   <label className="form-field"><span>{_uiText("Status")}</span><select value={form.status} onChange={event=>set('status',event.target.value)}><option value="ACTIVE">{_uiText("Active")}</option><option value="INACTIVE">Inactive · hidden from products and customers</option></select></label>
    <label className={styles.wide}><input type="checkbox" checked={form.customerVisible} onChange={event=>set('customerVisible',event.target.checked)}/> Visible to customers on product pages and comparison</label>
+   <label className={styles.wide}><input type="checkbox" disabled={!form.customerVisible||!['SELECT','BOOLEAN','NUMBER'].includes(form.dataType)} checked={form.filterable} onChange={event=>set('filterable',event.target.checked)}/> Use as a storefront filter<small className={styles.note}>Available for customer-visible Choice, Yes / No and Number fields. Number filters use the configured unit without automatic conversion. Options appear after eligible published products have values. Category scopes match directly assigned categories, not ancestors.</small></label>
   </fieldset>
   {error&&<p className="form-error" role="alert">{error}</p>}
- </div><footer className={styles.footer}><button className="button button-secondary" type="button" disabled={busy} onClick={()=>dismiss()}>Cancel</button>{canSave&&<button className="button button-primary" disabled={busy||!dirty} type="submit">{busy?'Saving…':'Save specification'}</button>}</footer></form>}</SizeGuideModal>;
+ </div><footer className={styles.footer}><button className="button button-secondary" type="button" disabled={busy} onClick={()=>dismiss()}>{_uiText("Cancel")}</button>{canSave&&<button className="button button-primary" disabled={busy||!dirty} type="submit">{busy?_uiText("Saving…"):'Save specification'}</button>}</footer></form>}</SizeGuideModal>;
 }

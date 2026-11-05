@@ -1,6 +1,8 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import styles from "./table-pagination.module.css";
 
 const DEFAULT_PAGE_SIZES = [10, 20, 50, 100];
 
@@ -30,6 +32,8 @@ export function TablePagination({
   total = 0,
   totalPages = 1
 }) {
+ const {t: _uiText}=useUiLocalization();
+
   if (!total) return null;
 
   const safeTotalPages = Math.max(1, totalPages);
@@ -39,15 +43,15 @@ export function TablePagination({
   const pages = visiblePages(safePage, safeTotalPages);
 
   return (
-    <nav className="table-pagination" aria-label={`${itemLabel} pagination`}>
+    <nav className={`table-pagination ${styles.pagination}`} aria-label={`${itemLabel} pagination`}>
       <p className="table-pagination-summary" aria-live="polite">
-        Showing <strong>{firstItem.toLocaleString("en-IN")}–{lastItem.toLocaleString("en-IN")}</strong> of <strong>{total.toLocaleString("en-IN")}</strong> {itemLabel}
+        {_uiText("Showing")} <strong>{firstItem.toLocaleString("en-IN")}–{lastItem.toLocaleString("en-IN")}</strong> {_uiText("of")} <strong>{total.toLocaleString("en-IN")}</strong> {itemLabel}
       </p>
 
       <div className="table-pagination-controls">
         {onPageSizeChange ? (
           <label className="table-page-size">
-            <span>Rows</span>
+            <span>{_uiText("Rows")}</span>
             <select
               aria-label={`Rows per page for ${itemLabel}`}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
@@ -67,7 +71,7 @@ export function TablePagination({
             type="button"
           >
             <ChevronLeft aria-hidden="true" size={16} />
-            <span>Previous</span>
+            <span>{_uiText("Previous")}</span>
           </button>
 
           <div className="table-page-numbers" aria-label={`Page ${safePage} of ${safeTotalPages}`}>
@@ -92,7 +96,7 @@ export function TablePagination({
             onClick={() => onPageChange(safePage + 1)}
             type="button"
           >
-            <span>Next</span>
+            <span>{_uiText("Next")}</span>
             <ChevronRight aria-hidden="true" size={16} />
           </button>
         </div>

@@ -1,0 +1,187 @@
+.workspace {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.scope,
+.policy,
+.chart,
+.records {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  min-width: 0;
+}
+.scope h2 {
+  font-size: 24px;
+  margin: 8px 0;
+}
+.scope p,
+.policy p,
+.chart p {
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 1000px;
+}
+.storeTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+  margin: 24px 0;
+}
+.storeTools > label {
+  flex: 1 1 240px;
+}
+.storeTools form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  flex: 1 1 280px;
+}
+.storeTools form label {
+  flex: 1;
+  min-width: 0;
+}
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 16px;
+}
+.filters label {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.metrics > div {
+  display: grid;
+  gap: 10px;
+  padding: 24px 16px;
+  min-width: 0;
+  border-right: 1px solid var(--line);
+}
+.metrics span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.metrics strong {
+  font-size: clamp(20px, 2vw, 30px);
+  overflow-wrap: anywhere;
+}
+.policy summary,
+.chart summary {
+  cursor: pointer;
+  min-height: 44px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.records header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.records td small {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.bars {
+  display: flex;
+  gap: 8px;
+  height: 220px;
+  overflow-x: auto;
+  align-items: end;
+  padding: 16px 0;
+}
+.bars > div {
+  min-width: 28px;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+  gap: 10px;
+}
+.bars > div > div {
+  height: 170px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+}
+.bars i {
+  width: 26%;
+  display: block;
+  background: var(--accent);
+  min-width: 3px;
+}
+.bars i[data-series='clicks'] {
+  background: var(--positive);
+}
+.bars i[data-series='adds'] {
+  background: var(--warning);
+}
+.bars small {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.skeleton {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.skeleton span {
+  height: 100px;
+  border-radius: 16px;
+  background: var(--line);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes pulse {
+  to {
+    opacity: 0.4;
+  }
+}
+@media (max-width: 1100px) {
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .scope,
+  .policy,
+  .chart,
+  .records {
+    padding: 16px;
+  }
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .filters button {
+    flex: 1 1 100%;
+  }
+  .storeTools form {
+    flex-wrap: wrap;
+  }
+  .storeTools form button {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton span {
+    animation: none;
+  }
+}

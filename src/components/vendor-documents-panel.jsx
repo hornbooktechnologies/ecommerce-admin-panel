@@ -1,5 +1,6 @@
 "use client";
 
+import {useLocalization as useUiLocalization} from '@/localization/provider';
 import { useMemo, useState } from "react";
 import { CalendarClock, Check, Download, FileCheck2, FileText, ShieldAlert, Upload, X } from "lucide-react";
 import { Status } from "@/components/dashboard-primitives";
@@ -29,6 +30,8 @@ function fileSize(value) {
 }
 
 export function VendorDocumentsPanel({ accessToken, canManage, documents, onChange, tenantId, vendorId }) {
+ const {t: _uiText}=useUiLocalization();
+
   const [showUpload, setShowUpload] = useState(false);
   const [file, setFile] = useState(null);
   const [form, setForm] = useState({ documentType: "GST_CERTIFICATE", documentNumber: "", expiresAt: "" });
@@ -92,7 +95,7 @@ export function VendorDocumentsPanel({ accessToken, canManage, documents, onChan
         <FileText aria-hidden="true" size={19} /><span><strong>{file?.name || "Choose secure file"}</strong><small>{file ? fileSize(file.size) : "PDF, PNG or JPEG - maximum 10 MB"}</small></span></label>
       <button className="button button-success" disabled={busy === "upload" || !file} type="submit"><Upload aria-hidden="true" size={16} />{busy === "upload" ? "Uploading..." : "Upload for review"}</button>
     </form> : null}
-    {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={() => setError("")} type="button">Dismiss</button></div> : null}
+    {error ? <div className="inline-state inline-state-error" role="alert"><span>{error}</span><button onClick={() => setError("")} type="button">{_uiText("Dismiss")}</button></div> : null}
     {documents.length ? <div className="vendor-document-list">{documents.map((document) => {
       const displayStatus = document.status;
       return <article key={document.id}>
@@ -100,14 +103,14 @@ export function VendorDocumentsPanel({ accessToken, canManage, documents, onChan
         <div className="vendor-document-identity"><strong>{documentTypes[document.type] || document.type.replaceAll("_", " ")}</strong><small>{document.number || document.fileName || "No document number"}</small><em>{fileSize(document.byteSize)} - added {documentDate(document.createdAt, "date unavailable")}</em></div>
         <span className="vendor-document-expiry"><CalendarClock aria-hidden="true" size={15} /><span><small>Expiry</small><strong>{documentDate(document.expiresAt)}</strong></span></span>
         <Status tone={statusTone[document.status]}>{displayStatus.toLowerCase()}</Status>
-        <div className="vendor-document-actions"><button className="row-action" disabled={Boolean(busy)} onClick={() => download(document)} type="button"><Download aria-hidden="true" size={14} />{busy === `download-${document.id}` ? "Opening..." : "Download"}</button>
+        <div className="vendor-document-actions"><button className="row-action" disabled={Boolean(busy)} onClick={() => download(document)} type="button"><Download aria-hidden="true" size={14} />{busy === `download-${document.id}` ? "Opening..." : _uiText("Download")}</button>
           {canManage && document.status !== "VERIFIED" ? <button className="row-action row-action-positive" disabled={Boolean(busy)} onClick={() => decide(document.id, "VERIFIED")} type="button"><Check aria-hidden="true" size={14} />Verify</button> : null}
           {canManage && document.status !== "REJECTED" ? <button className="row-action vendor-document-reject" disabled={Boolean(busy)} onClick={() => setReview({ id: document.id, reason: "" })} type="button"><ShieldAlert aria-hidden="true" size={14} />Reject</button> : null}
         </div>
         {document.rejectionReason ? <p className="vendor-document-reason"><ShieldAlert aria-hidden="true" size={14} />{document.rejectionReason}</p> : null}
         {review?.id === document.id ? <form className="vendor-document-review" onSubmit={(event) => { event.preventDefault(); decide(document.id, "REJECTED", review.reason); }}>
           <label className="form-field"><span>Rejection reason <em>*</em></span><textarea autoFocus maxLength={500} minLength={3} onChange={(event) => setReview((current) => ({ ...current, reason: event.target.value }))} required rows={2} value={review.reason} /></label>
-          <div><button className="button button-secondary" onClick={() => setReview(null)} type="button">Cancel</button><button className="button button-danger" disabled={busy === `review-${document.id}` || review.reason.trim().length < 3} type="submit">Confirm rejection</button></div>
+          <div><button className="button button-secondary" onClick={() => setReview(null)} type="button">{_uiText("Cancel")}</button><button className="button button-danger" disabled={busy === `review-${document.id}` || review.reason.trim().length < 3} type="submit">Confirm rejection</button></div>
         </form> : null}
       </article>;
     })}</div> : <div className="vendor-document-empty"><FileText aria-hidden="true" size={24} /><div><strong>No KYC files uploaded</strong><p>Add GST, PAN, banking or incorporation proof for compliance review.</p></div></div>}
